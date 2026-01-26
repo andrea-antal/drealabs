@@ -1,0 +1,9 @@
+{
+  "redirects": [
+    {
+      "source": "/blog",
+      "destination": "https://drealabs.substack.com",
+      "permanent": false
+    }
+  ]
+}

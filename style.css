@@ -1,0 +1,49 @@
+:root {
+  --bg: #1a1a1a;
+  --accent: #00ffd0;
+  --accent-hover: #00ffaa;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  min-height: 100vh;
+  background-color: var(--bg);
+  background-image: radial-gradient(ellipse at center, #2a2a2a 0%, var(--bg) 70%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Space Grotesk', sans-serif;
+}
+
+main {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2rem;
+  padding: 2rem;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+  filter: drop-shadow(0 0 40px rgba(0, 255, 208, 0.15));
+}
+
+a {
+  color: var(--accent);
+  text-decoration: none;
+  font-size: 1.125rem;
+  font-weight: 500;
+  transition: color 0.2s ease, transform 0.2s ease;
+  display: inline-block;
+}
+
+a:hover {
+  color: var(--accent-hover);
+  transform: translateX(4px);
+}
