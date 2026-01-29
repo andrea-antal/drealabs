@@ -1,0 +1,191 @@
+{
+  "projects": [
+    {
+      "id": "tank-1",
+      "title": "Project 1 - Duck",
+      "description": "Placeholder description for tank 1. Replace with actual project details.",
+      "tech": ["Tech1", "Tech2"],
+      "links": {
+        "live": "https://example.com",
+        "github": "https://github.com/example"
+      },
+      "screenshot": "",
+      "hotspot": {
+        "x": 1030,
+        "y": 340,
+        "width": 150,
+        "height": 370
+      }
+    },
+    {
+      "id": "tank-2",
+      "title": "Project 2 - Cactus",
+      "description": "Placeholder description for tank 2. Replace with actual project details.",
+      "tech": ["Tech1", "Tech2"],
+      "links": {
+        "live": "https://example.com",
+        "github": "https://github.com/example"
+      },
+      "screenshot": "",
+      "hotspot": {
+        "x": 1250,
+        "y": 340,
+        "width": 140,
+        "height": 370
+      }
+    },
+    {
+      "id": "tank-3",
+      "title": "Project 3 - Cat",
+      "description": "Placeholder description for tank 3. Replace with actual project details.",
+      "tech": ["Tech1", "Tech2"],
+      "links": {
+        "live": "https://example.com",
+        "github": "https://github.com/example"
+      },
+      "screenshot": "",
+      "hotspot": {
+        "x": 1430,
+        "y": 340,
+        "width": 140,
+        "height": 370
+      }
+    },
+    {
+      "id": "tank-4",
+      "title": "Project 4 - Donut",
+      "description": "Placeholder description for tank 4. Replace with actual project details.",
+      "tech": ["Tech1", "Tech2"],
+      "links": {
+        "live": "https://example.com",
+        "github": "https://github.com/example"
+      },
+      "screenshot": "",
+      "hotspot": {
+        "x": 1620,
+        "y": 340,
+        "width": 140,
+        "height": 370
+      }
+    },
+    {
+      "id": "tank-5",
+      "title": "Project 5 - Robot",
+      "description": "Placeholder description for tank 5. Replace with actual project details.",
+      "tech": ["Tech1", "Tech2"],
+      "links": {
+        "live": "https://example.com",
+        "github": "https://github.com/example"
+      },
+      "screenshot": "",
+      "hotspot": {
+        "x": 800,
+        "y": -250,
+        "width": 140,
+        "height": 350
+      }
+    },
+    {
+      "id": "tank-6",
+      "title": "Project 6 - Cloud",
+      "description": "Placeholder description for tank 6. Replace with actual project details.",
+      "tech": ["Tech1", "Tech2"],
+      "links": {
+        "live": "https://example.com",
+        "github": "https://github.com/example"
+      },
+      "screenshot": "",
+      "hotspot": {
+        "x": 1030,
+        "y": -250,
+        "width": 140,
+        "height": 350
+      }
+    },
+    {
+      "id": "tank-7",
+      "title": "Project 7 - Alien",
+      "description": "Placeholder description for tank 7. Replace with actual project details.",
+      "tech": ["Tech1", "Tech2"],
+      "links": {
+        "live": "https://example.com",
+        "github": "https://github.com/example"
+      },
+      "screenshot": "",
+      "hotspot": {
+        "x": 1250,
+        "y": -250,
+        "width": 150,
+        "height": 350
+      }
+    },
+    {
+      "id": "tank-8",
+      "title": "Project 8 - Robot Arm",
+      "description": "Placeholder description for tank 8. Replace with actual project details.",
+      "tech": ["Tech1", "Tech2"],
+      "links": {
+        "live": "https://example.com",
+        "github": "https://github.com/example"
+      },
+      "screenshot": "",
+      "hotspot": {
+        "x": 1435,
+        "y": -220,
+        "width": 140,
+        "height": 350
+      }
+    },
+    {
+      "id": "tank-9",
+      "title": "Project 9 - Chicken",
+      "description": "Placeholder description for tank 9. Replace with actual project details.",
+      "tech": ["Tech1", "Tech2"],
+      "links": {
+        "live": "https://example.com",
+        "github": "https://github.com/example"
+      },
+      "screenshot": "",
+      "hotspot": {
+        "x": 1615,
+        "y": -250,
+        "width": 140,
+        "height": 350
+      }
+    },
+    {
+      "id": "helm",
+      "title": "Helm",
+      "description": "The ship's helm.",
+      "tech": [],
+      "links": {},
+      "screenshot": "",
+      "hotspot": {
+        "x": -1508,
+        "y": -170,
+        "width": 350,
+        "height": 520
+      }
+    },
+    {
+      "id": "sonar",
+      "title": "Sonar",
+      "description": "The ship's sonar system.",
+      "tech": [],
+      "links": {},
+      "screenshot": "",
+      "hotspot": {
+        "x": -1068,
+        "y": 580,
+        "width": 400,
+        "height": 400
+      }
+    }
+  ],
+  "scene": {
+    "width": 4096,
+    "height": 2048,
+    "floorY": -860,
+    "characterStartX": 0
+  }
+}

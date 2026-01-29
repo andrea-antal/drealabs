@@ -3,19 +3,91 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Drea Labs - Coming Soon</title>
-  <meta name="description" content="Drea Labs - An interactive portfolio experience. Coming soon.">
+  <title>Drea Labs - Interactive Portfolio</title>
+  <meta name="description" content="Drea Labs - An interactive point-and-click portfolio experience.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="icon" type="image/png" href="favicon.png">
   <link rel="apple-touch-icon" href="favicon.png">
   <link rel="stylesheet" href="style.css">
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js"
+      }
+    }
+  </script>
 </head>
 <body>
-  <main>
-    <img src="comingsoon.png" alt="Drea Labs - Coming Soon">
+  <!-- Game Container -->
+  <div id="game-container"></div>
+
+  <!-- Speech Bubble -->
+  <div id="speech-bubble">
+    <span class="bubble-text">Hello! Click on a tank to explore.</span>
+  </div>
+
+  <!-- Thought Bubble -->
+  <div id="thought-bubble">
+    <span class="bubble-text">Hmm, which tank should I check out?</span>
+    <div class="thought-dots">
+      <span class="dot dot-1"></span>
+      <span class="dot dot-2"></span>
+      <span class="dot dot-3"></span>
+    </div>
+  </div>
+
+  <!-- Controls Hint -->
+  <div id="controls-hint">Tap/click around to explore<span class="keyboard-hint"><br>&nbsp;&nbsp;&nbsp;&nbsp;Use <kbd>&larr;</kbd> <kbd>&rarr;</kbd> to move</span></div>
+
+  <!-- Loading Indicator -->
+  <div id="loading">
+    <div class="loading-text">Loading...</div>
+  </div>
+
+  <!-- Small Screen Fallback -->
+  <div id="small-screen-fallback">
+    <img src="comingsoon.png" alt="Drea Labs">
+    <p>This experience is best viewed on a larger screen.</p>
     <a href="https://drealabs.substack.com">Read the blog &rarr;</a>
-  </main>
+  </div>
+
+  <!-- Project Panel Backdrop -->
+  <div id="panel-backdrop"></div>
+
+  <!-- Message in a Bottle Overlay -->
+  <div id="message-bottle">
+    <a href="https://drealabs.com/blog" target="_blank" rel="noopener" id="bottle-link">
+      <video src="assets/message-bottle.mp4" class="bottle-image" autoplay loop muted playsinline></video>
+      <p class="bottle-hint">Click to visit the blog</p>
+    </a>
+  </div>
+
+  <!-- Captain's Log Overlay --><div id="captains-log">
+    <button id="log-close" aria-label="Close log">&times;</button>
+    <div class="log-content">
+      <img src="assets/captains-log.png" alt="Captain's Log" class="log-image">
+      <div class="log-text">
+        <h2 class="log-title">CAPTAIN'S LOG</h2>
+        <div class="changelog-entries"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Project Panel -->
+  <div id="project-panel">
+    <button id="panel-close" aria-label="Close panel">&times;</button>
+    <img class="panel-screenshot" src="" alt="">
+    <h2 class="panel-title"></h2>
+    <p class="panel-description"></p>
+    <div class="panel-tech"></div>
+    <div class="panel-links">
+      <a class="panel-link-live" href="#" target="_blank" rel="noopener">View Live</a>
+      <a class="panel-link-github" href="#" target="_blank" rel="noopener">GitHub</a>
+    </div>
+  </div>
+
+  <script type="module" src="js/main.js"></script>
 </body>
 </html>

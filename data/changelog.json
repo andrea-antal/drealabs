@@ -1,0 +1,18 @@
+{
+  "entries": [
+    {
+      "version": "0.1",
+      "date": "2026-01-29",
+      "title": "Initial Launch",
+      "changes": [
+        "Interactive point-and-click portfolio live",
+        "Character navigation with walk animation",
+        "Project tanks set up as placeholders",
+        "Speech and thought bubble system",
+        "Captain's log shows changelog",
+        "Sonar displays message in a bottle",
+        "Bottle links to the blog"
+      ]
+    }
+  ]
+}
