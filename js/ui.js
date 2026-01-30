@@ -2,9 +2,16 @@ let panelElement;
 let backdropElement;
 let captainsLogElement;
 let messageBottleElement;
+let lightboxElement;
 let isOpen = false;
 let onCloseCallback = null;
 let changelogLoaded = false;
+
+// Carousel state
+let currentSlide = 0;
+let totalSlides = 0;
+let touchStartX = 0;
+let touchEndX = 0;
 
 async function loadChangelog() {
   if (changelogLoaded) return;
@@ -16,15 +23,19 @@ async function loadChangelog() {
 
     if (!container) return;
 
-    container.innerHTML = data.entries.map(entry => `
-      <div class="changelog-entry">
-        <div class="changelog-version">v${entry.version}</div>
-        <div class="changelog-date">${formatDate(entry.date)}</div>
-        <ul class="changelog-list">
-          ${entry.changes.map(change => `<li>${change}</li>`).join('')}
-        </ul>
-      </div>
-    `).join('');
+    // Only show the latest entry
+    const latest = data.entries[0];
+    if (latest) {
+      container.innerHTML = `
+        <div class="changelog-entry">
+          <div class="changelog-version">v${latest.version}</div>
+          <div class="changelog-date">${formatDate(latest.date)}</div>
+          <ul class="changelog-list">
+            ${latest.changes.map(change => `<li>${change}</li>`).join('')}
+          </ul>
+        </div>
+      `;
+    }
 
     changelogLoaded = true;
   } catch (e) {
@@ -42,15 +53,28 @@ export function initUI(closeCallback) {
   backdropElement = document.getElementById('panel-backdrop');
   captainsLogElement = document.getElementById('captains-log');
   messageBottleElement = document.getElementById('message-bottle');
+  lightboxElement = document.getElementById('image-lightbox');
   onCloseCallback = closeCallback;
 
   // Close on backdrop click
   backdropElement.addEventListener('click', closePanel);
 
-  // Close on Escape key
+  // Close on Escape key, carousel navigation with arrow keys
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && isOpen) {
-      closeAll();
+    if (e.key === 'Escape') {
+      if (lightboxElement?.classList.contains('visible')) {
+        closeLightbox();
+      } else if (isOpen) {
+        closeAll();
+      }
+    }
+    // Arrow key navigation for carousel when panel is open (and lightbox not open)
+    if (panelElement?.classList.contains('open') && !lightboxElement?.classList.contains('visible') && totalSlides > 1) {
+      if (e.key === 'ArrowLeft') {
+        prevSlide();
+      } else if (e.key === 'ArrowRight') {
+        nextSlide();
+      }
     }
   });
 
@@ -83,6 +107,39 @@ export function initUI(closeCallback) {
       }
     });
   }
+
+  // Carousel arrow click handlers
+  const prevBtn = document.querySelector('.carousel-prev');
+  const nextBtn = document.querySelector('.carousel-next');
+  if (prevBtn) prevBtn.addEventListener('click', prevSlide);
+  if (nextBtn) nextBtn.addEventListener('click', nextSlide);
+
+  // Carousel touch/swipe handlers
+  const carousel = document.querySelector('.carousel');
+  if (carousel) {
+    carousel.addEventListener('touchstart', (e) => {
+      touchStartX = e.changedTouches[0].screenX;
+    }, { passive: true });
+
+    carousel.addEventListener('touchend', (e) => {
+      touchEndX = e.changedTouches[0].screenX;
+      handleSwipe();
+    }, { passive: true });
+  }
+
+  // Lightbox close handlers
+  if (lightboxElement) {
+    lightboxElement.addEventListener('click', (e) => {
+      if (e.target === lightboxElement || e.target.id === 'lightbox-image') {
+        closeLightbox();
+      }
+    });
+  }
+
+  const lightboxCloseBtn = document.getElementById('lightbox-close');
+  if (lightboxCloseBtn) {
+    lightboxCloseBtn.addEventListener('click', closeLightbox);
+  }
 }
 
 export function showPanel(project) {
@@ -92,7 +149,6 @@ export function showPanel(project) {
   const title = panelElement.querySelector('.panel-title');
   const description = panelElement.querySelector('.panel-description');
   const techContainer = panelElement.querySelector('.panel-tech');
-  const screenshot = panelElement.querySelector('.panel-screenshot');
   const liveLink = panelElement.querySelector('.panel-link-live');
   const githubLink = panelElement.querySelector('.panel-link-github');
 
@@ -110,16 +166,77 @@ export function showPanel(project) {
     });
   }
 
-  // Screenshot
-  if (screenshot) {
-    if (project.screenshot) {
-      screenshot.src = project.screenshot;
-      screenshot.alt = project.title;
-      screenshot.style.display = 'block';
+  // Handle screenshots - support both old 'screenshot' (string) and new 'screenshots' (array)
+  const carousel = panelElement.querySelector('.carousel');
+  const slidesContainer = panelElement.querySelector('.carousel-slides');
+  const dotsContainer = panelElement.querySelector('.carousel-dots');
+  const prevBtn = panelElement.querySelector('.carousel-prev');
+  const nextBtn = panelElement.querySelector('.carousel-next');
+  const carouselHint = document.querySelector('.carousel-hint');
+
+  // Normalize screenshots to array
+  let screenshots = [];
+  if (project.screenshots && Array.isArray(project.screenshots)) {
+    screenshots = project.screenshots;
+  } else if (project.screenshot) {
+    screenshots = [project.screenshot];
+  }
+
+  // Filter out empty strings
+  screenshots = screenshots.filter(s => s && s.trim() !== '');
+
+  if (carousel && slidesContainer && dotsContainer) {
+    // Reset carousel state
+    currentSlide = 0;
+    totalSlides = screenshots.length;
+
+    if (totalSlides === 0) {
+      // No screenshots - hide carousel and hint
+      carousel.classList.add('hidden');
+      if (carouselHint) carouselHint.classList.add('hidden');
     } else {
-      screenshot.src = '';
-      screenshot.alt = '';
-      screenshot.style.display = 'none';
+      carousel.classList.remove('hidden');
+      if (carouselHint) carouselHint.classList.remove('hidden');
+
+      // Build slides
+      slidesContainer.innerHTML = screenshots.map((src, index) => `
+        <div class="carousel-slide">
+          <img src="${src}" alt="${project.title} screenshot ${index + 1}" data-src="${src}">
+        </div>
+      `).join('');
+
+      // Add click handlers to open lightbox
+      slidesContainer.querySelectorAll('.carousel-slide img').forEach(img => {
+        img.addEventListener('click', () => {
+          openLightbox(img.dataset.src);
+        });
+      });
+
+      // Build dots
+      dotsContainer.innerHTML = screenshots.map((_, index) => `
+        <button class="carousel-dot ${index === 0 ? 'active' : ''}" data-index="${index}" aria-label="Go to slide ${index + 1}"></button>
+      `).join('');
+
+      // Add dot click handlers
+      dotsContainer.querySelectorAll('.carousel-dot').forEach(dot => {
+        dot.addEventListener('click', () => {
+          goToSlide(parseInt(dot.dataset.index, 10));
+        });
+      });
+
+      // Show/hide arrows and dots based on slide count
+      if (totalSlides <= 1) {
+        if (prevBtn) prevBtn.classList.add('hidden');
+        if (nextBtn) nextBtn.classList.add('hidden');
+        dotsContainer.classList.add('hidden');
+      } else {
+        if (prevBtn) prevBtn.classList.remove('hidden');
+        if (nextBtn) nextBtn.classList.remove('hidden');
+        dotsContainer.classList.remove('hidden');
+      }
+
+      // Reset slide position
+      slidesContainer.style.transform = 'translateX(0)';
     }
   }
 
@@ -208,5 +325,69 @@ function closeAll() {
     closeCaptainsLog();
   } else if (messageBottleElement?.classList.contains('visible')) {
     closeMessageBottle();
+  }
+}
+
+// Carousel navigation functions
+function goToSlide(index) {
+  if (index < 0 || index >= totalSlides) return;
+
+  currentSlide = index;
+  const slidesContainer = document.querySelector('.carousel-slides');
+  const dots = document.querySelectorAll('.carousel-dot');
+
+  if (slidesContainer) {
+    slidesContainer.style.transform = `translateX(-${currentSlide * 100}%)`;
+  }
+
+  // Update active dot
+  dots.forEach((dot, i) => {
+    dot.classList.toggle('active', i === currentSlide);
+  });
+}
+
+function nextSlide() {
+  if (totalSlides <= 1) return;
+  const nextIndex = (currentSlide + 1) % totalSlides;
+  goToSlide(nextIndex);
+}
+
+function prevSlide() {
+  if (totalSlides <= 1) return;
+  const prevIndex = (currentSlide - 1 + totalSlides) % totalSlides;
+  goToSlide(prevIndex);
+}
+
+function handleSwipe() {
+  const swipeThreshold = 50;
+  const diff = touchStartX - touchEndX;
+
+  if (Math.abs(diff) > swipeThreshold) {
+    if (diff > 0) {
+      nextSlide(); // Swipe left = next
+    } else {
+      prevSlide(); // Swipe right = prev
+    }
+  }
+}
+
+// Lightbox functions
+function openLightbox(src) {
+  if (!lightboxElement) return;
+
+  const img = document.getElementById('lightbox-image');
+  if (img) {
+    img.src = src;
+  }
+  lightboxElement.classList.add('visible');
+}
+
+function closeLightbox() {
+  if (!lightboxElement) return;
+
+  lightboxElement.classList.remove('visible');
+  const img = document.getElementById('lightbox-image');
+  if (img) {
+    img.src = '';
   }
 }

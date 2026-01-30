@@ -9,7 +9,7 @@
         "live": "",
         "github": "https://github.com/andrea-antal/baby-words"
       },
-      "screenshot": "assets/projects/1-duck.png",
+      "screenshots": ["assets/projects/1-duck.png"],
       "hotspot": {
         "x": 1030,
         "y": 340,
@@ -26,7 +26,7 @@
         "live": "https://example.com",
         "github": "https://github.com/example"
       },
-      "screenshot": "",
+      "screenshots": [],
       "hotspot": {
         "x": 1250,
         "y": 340,
@@ -43,7 +43,7 @@
         "live": "https://example.com",
         "github": "https://github.com/example"
       },
-      "screenshot": "",
+      "screenshots": [],
       "hotspot": {
         "x": 1430,
         "y": 340,
@@ -53,14 +53,18 @@
     },
     {
       "id": "tank-4",
-      "title": "Project 4 - Donut",
-      "description": "Placeholder description for tank 4. Replace with actual project details.",
-      "tech": ["Tech1", "Tech2"],
+      "title": "AI Meal Planner",
+      "description": "This was a passion project from the start and what got me deep into Claude Code. I didn't just want to build Yet Another Meal Planner, but try and solve more than the one problem I had with planning and cooking meals. I've loaded it with a ton of natural language/voice input features to make it work for my own use case (most commonly, standing with the fridge door open and pondering out loud what the heck to make with the stuff in there). It's still a major undertaking in progress and the direction is still not yet determined - I'll come back and update when I go through the next major milestone. For now, it's in a closed beta, but I've changed to building in public on github with an MIT license.",
+      "tech": ["TypeScript", "Python", "Claude"],
       "links": {
-        "live": "https://example.com",
-        "github": "https://github.com/example"
+        "live": "",
+        "github": "https://github.com/andrea-antal/mealplanner"
       },
-      "screenshot": "",
+      "screenshots": [
+        "assets/projects/4-meal-1.png",
+        "assets/projects/4-meal-2.png",
+        "assets/projects/4-meal-3.png"
+      ],
       "hotspot": {
         "x": 1620,
         "y": 340,
@@ -77,7 +81,7 @@
         "live": "https://example.com",
         "github": "https://github.com/example"
       },
-      "screenshot": "",
+      "screenshots": [],
       "hotspot": {
         "x": 800,
         "y": -250,
@@ -94,7 +98,7 @@
         "live": "https://example.com",
         "github": "https://github.com/example"
       },
-      "screenshot": "",
+      "screenshots": [],
       "hotspot": {
         "x": 1030,
         "y": -250,
@@ -111,7 +115,7 @@
         "live": "https://example.com",
         "github": "https://github.com/example"
       },
-      "screenshot": "",
+      "screenshots": [],
       "hotspot": {
         "x": 1250,
         "y": -250,
@@ -128,7 +132,7 @@
         "live": "https://example.com",
         "github": "https://github.com/example"
       },
-      "screenshot": "",
+      "screenshots": [],
       "hotspot": {
         "x": 1435,
         "y": -220,
@@ -145,7 +149,7 @@
         "live": "https://example.com",
         "github": "https://github.com/example"
       },
-      "screenshot": "",
+      "screenshots": [],
       "hotspot": {
         "x": 1615,
         "y": -250,
@@ -159,7 +163,7 @@
       "description": "The ship's helm.",
       "tech": [],
       "links": {},
-      "screenshot": "",
+      "screenshots": [],
       "hotspot": {
         "x": -1508,
         "y": -170,
@@ -173,7 +177,7 @@
       "description": "The ship's sonar system.",
       "tech": [],
       "links": {},
-      "screenshot": "",
+      "screenshots": [],
       "hotspot": {
         "x": -1068,
         "y": 580,

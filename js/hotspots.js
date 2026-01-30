@@ -30,8 +30,13 @@ export function initHotspots(projects, clickCallback) {
   mouse = new THREE.Vector2();
   onHotspotClick = clickCallback;
 
+  // Filter out placeholder projects (keep real projects and special hotspots like helm/sonar)
+  const activeProjects = projects.filter(p =>
+    !p.description.startsWith('Placeholder description')
+  );
+
   // Create invisible meshes for each hotspot
-  projects.forEach((project) => {
+  activeProjects.forEach((project) => {
     const { x, y, width, height } = project.hotspot;
     const radius = 20; // Corner radius
 

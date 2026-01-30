@@ -1,6 +1,17 @@
 {
   "entries": [
     {
+      "version": "0.2",
+      "date": "2026-01-30",
+      "title": "Project Screenshots",
+      "changes": [
+        "Added Nathan's Words project",
+        "Added AI Meal Planner project",
+        "Screenshot carousel for project panels",
+        "Click-to-expand lightbox for full-size viewing"
+      ]
+    },
+    {
       "version": "0.1",
       "date": "2026-01-29",
       "title": "Initial Launch",

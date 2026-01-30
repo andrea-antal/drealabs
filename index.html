@@ -78,14 +78,26 @@
   <!-- Project Panel -->
   <div id="project-panel">
     <button id="panel-close" aria-label="Close panel">&times;</button>
-    <img class="panel-screenshot" src="" alt="">
     <h2 class="panel-title"></h2>
+    <div class="carousel">
+      <div class="carousel-slides"></div>
+      <button class="carousel-arrow carousel-prev" aria-label="Previous">&lsaquo;</button>
+      <button class="carousel-arrow carousel-next" aria-label="Next">&rsaquo;</button>
+      <div class="carousel-dots"></div>
+    </div>
+    <p class="carousel-hint">Click image to enlarge</p>
     <p class="panel-description"></p>
     <div class="panel-tech"></div>
     <div class="panel-links">
       <a class="panel-link-live" href="#" target="_blank" rel="noopener">View Live</a>
       <a class="panel-link-github" href="#" target="_blank" rel="noopener">GitHub</a>
     </div>
+  </div>
+
+  <!-- Image Lightbox -->
+  <div id="image-lightbox">
+    <button id="lightbox-close" aria-label="Close lightbox">&times;</button>
+    <img id="lightbox-image" src="" alt="">
   </div>
 
   <script type="module" src="js/main.js"></script>
