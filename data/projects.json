@@ -2,14 +2,14 @@
   "projects": [
     {
       "id": "tank-1",
-      "title": "Project 1 - Duck",
-      "description": "Placeholder description for tank 1. Replace with actual project details.",
-      "tech": ["Tech1", "Tech2"],
+      "title": "Nathan's Words",
+      "description": "A soundboard of cute words my toddler says. Got the idea from a Lenny Rachitsky post. I recorded the audio on my phone, split up each word into separate mp3 files using Descript, then used Claude Code to organize the files and create the site.",
+      "tech": ["TypeScript", "JavaScript", "CSS"],
       "links": {
-        "live": "https://example.com",
-        "github": "https://github.com/example"
+        "live": "",
+        "github": "https://github.com/andrea-antal/baby-words"
       },
-      "screenshot": "",
+      "screenshot": "assets/projects/1-duck.png",
       "hotspot": {
         "x": 1030,
         "y": 340,
