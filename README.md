@@ -4,6 +4,14 @@ An interactive point-and-click portfolio experience built with Three.js. Explore
 
 **Live:** [drealabs.com](https://drealabs.com)
 
+---
+
+Hi! I'm Andrea. I've been learning AI tools, vibe coding and trying out new coding things since 2025. I wanted to set up a portfolio site for my projects/repos and I was inspired to try making it fun and interactive like my favorite nostalgic gaming era of the 90s/early 2000s of point-and-click adventure games from LucasArts, Sierra, and more. I had seen a lot of chatter online about using Three.js so I was super curious what I could achieve with it. Here we are - I'm so thrilled and absolutely chuffed building and playing with this. I hope you enjoy it!
+
+Feel free to send me a hello through my [blog](https://drealabs.com/blog) or [hi@drealabs.com](mailto:hi@drealabs.com).
+
+---
+
 ## Features
 
 - **Point-and-click navigation** - Click to walk, explore the scene
