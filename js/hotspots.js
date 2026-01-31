@@ -255,7 +255,24 @@ export function setEnabled(value) {
   if (!enabled) {
     const renderer = getRenderer();
     renderer.domElement.style.cursor = 'default';
-    hoveredHotspot = null;
+
+    // Reset hovered hotspot opacity before nulling
+    if (hoveredHotspot) {
+      hoveredHotspot.material.opacity = 0;
+      hoveredHotspot = null;
+    }
+
+    // Stop and reset any proximity pulse in progress
+    proximityPulsingHotspots.forEach(hotspot => {
+      hotspot.material.opacity = 0;
+    });
+    proximityPulsingHotspots = [];
+
+    // Stop and reset any idle pulse in progress
+    if (pulsingHotspot) {
+      pulsingHotspot.material.opacity = 0;
+      pulsingHotspot = null;
+    }
   }
 }
 
