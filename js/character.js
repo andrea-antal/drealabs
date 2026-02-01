@@ -226,3 +226,52 @@ export function stopWalking() {
 export function getFloorY() {
   return floorY;
 }
+
+export function setFloorY(newFloorY) {
+  floorY = newFloorY;
+  // Update sprite position to match new floor
+  if (sprite) {
+    sprite.position.y = floorY + idleHeight / 2;
+  }
+}
+
+export function setPosition(x, y = null) {
+  if (!sprite) return;
+  sprite.position.x = x;
+  if (y !== null) {
+    sprite.position.y = y;
+  } else {
+    sprite.position.y = floorY + idleHeight / 2;
+  }
+  // Reset walking state
+  isWalking = false;
+  targetX = null;
+  onArrivalCallback = null;
+}
+
+export function disposeCharacter() {
+  if (!sprite) return;
+
+  const scene = getScene();
+  scene.remove(sprite);
+
+  // Dispose materials and textures
+  if (sprite.material) {
+    sprite.material.dispose();
+  }
+
+  // Dispose loaded textures (not the placeholder canvas texture)
+  if (idleTexture && idleTexture.image && !(idleTexture.image instanceof HTMLCanvasElement)) {
+    idleTexture.dispose();
+  }
+  if (walkTexture && walkTexture !== idleTexture && walkTexture.image && !(walkTexture.image instanceof HTMLCanvasElement)) {
+    walkTexture.dispose();
+  }
+
+  sprite = null;
+  idleTexture = null;
+  walkTexture = null;
+  isWalking = false;
+  targetX = null;
+  onArrivalCallback = null;
+}

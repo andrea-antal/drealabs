@@ -4,6 +4,7 @@ let scene, camera, renderer;
 let sceneWidth = 4096;
 let sceneHeight = 2048;
 let backgroundMesh;
+let resizeHandler;
 
 export function initScene(container) {
   // Create scene
@@ -36,12 +37,22 @@ export function initScene(container) {
   container.appendChild(renderer.domElement);
 
   // Handle resize
-  window.addEventListener('resize', onResize);
+  resizeHandler = onResize;
+  window.addEventListener('resize', resizeHandler);
 
   return { scene, camera, renderer };
 }
 
-export async function loadBackground(url) {
+export async function loadBackground(url, useSRGB = false) {
+  // Dispose existing background if present
+  if (backgroundMesh) {
+    scene.remove(backgroundMesh);
+    backgroundMesh.geometry.dispose();
+    backgroundMesh.material.map?.dispose();
+    backgroundMesh.material.dispose();
+    backgroundMesh = null;
+  }
+
   const loader = new THREE.TextureLoader();
 
   return new Promise((resolve, reject) => {
@@ -51,7 +62,9 @@ export async function loadBackground(url) {
         // Pixel art settings
         texture.magFilter = THREE.NearestFilter;
         texture.minFilter = THREE.NearestFilter;
-        // No colorSpace - keep slightly desaturated for contrast with sprite
+        if (useSRGB) {
+          texture.colorSpace = THREE.SRGBColorSpace;
+        }
 
         // Create background plane
         const geometry = new THREE.PlaneGeometry(sceneWidth, sceneHeight);
@@ -165,4 +178,22 @@ export function getRenderer() {
 
 export function getSceneBounds() {
   return { width: sceneWidth, height: sceneHeight };
+}
+
+export function setSceneDimensions(width, height) {
+  sceneWidth = width;
+  sceneHeight = height;
+  // Trigger resize to update camera
+  onResize();
+}
+
+export function disposeScene() {
+  // Dispose background
+  if (backgroundMesh) {
+    scene.remove(backgroundMesh);
+    backgroundMesh.geometry.dispose();
+    backgroundMesh.material.map?.dispose();
+    backgroundMesh.material.dispose();
+    backgroundMesh = null;
+  }
 }

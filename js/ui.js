@@ -3,6 +3,8 @@ let backdropElement;
 let captainsLogElement;
 let messageBottleElement;
 let lightboxElement;
+let transitionOverlay;
+let npcDialogElement;
 let isOpen = false;
 let onCloseCallback = null;
 let changelogLoaded = false;
@@ -12,6 +14,10 @@ let currentSlide = 0;
 let totalSlides = 0;
 let touchStartX = 0;
 let touchEndX = 0;
+
+// NPC Dialog state
+let currentDialogNPC = null;
+let currentDialogIndex = 0;
 
 async function loadChangelog() {
   if (changelogLoaded) return;
@@ -54,6 +60,8 @@ export function initUI(closeCallback) {
   captainsLogElement = document.getElementById('captains-log');
   messageBottleElement = document.getElementById('message-bottle');
   lightboxElement = document.getElementById('image-lightbox');
+  transitionOverlay = document.getElementById('transition-overlay');
+  npcDialogElement = document.getElementById('npc-dialog');
   onCloseCallback = closeCallback;
 
   // Close on backdrop click
@@ -139,6 +147,28 @@ export function initUI(closeCallback) {
   const lightboxCloseBtn = document.getElementById('lightbox-close');
   if (lightboxCloseBtn) {
     lightboxCloseBtn.addEventListener('click', closeLightbox);
+  }
+
+  // NPC Dialog handlers
+  if (npcDialogElement) {
+    // Close on backdrop click
+    npcDialogElement.addEventListener('click', (e) => {
+      if (e.target === npcDialogElement) {
+        closeNPCDialog();
+      }
+    });
+
+    // Close button
+    const dialogCloseBtn = document.getElementById('dialog-close');
+    if (dialogCloseBtn) {
+      dialogCloseBtn.addEventListener('click', closeNPCDialog);
+    }
+
+    // Continue button
+    const dialogNextBtn = npcDialogElement.querySelector('.dialog-next');
+    if (dialogNextBtn) {
+      dialogNextBtn.addEventListener('click', advanceDialog);
+    }
   }
 }
 
@@ -318,6 +348,70 @@ export function closeMessageBottle() {
   }
 }
 
+export function showNPCDialog(npc) {
+  if (!npcDialogElement || !npc) return;
+
+  currentDialogNPC = npc;
+  currentDialogIndex = 0;
+
+  // Set NPC name
+  const nameEl = npcDialogElement.querySelector('.dialog-name');
+  if (nameEl) nameEl.textContent = npc.name;
+
+  // Show first dialog line
+  updateDialogText();
+
+  npcDialogElement.classList.add('visible');
+  isOpen = true;
+}
+
+export function closeNPCDialog() {
+  if (!npcDialogElement) return;
+
+  npcDialogElement.classList.remove('visible');
+  isOpen = false;
+  currentDialogNPC = null;
+  currentDialogIndex = 0;
+
+  if (onCloseCallback) {
+    onCloseCallback();
+  }
+}
+
+function advanceDialog() {
+  if (!currentDialogNPC) return;
+
+  currentDialogIndex++;
+
+  if (currentDialogIndex >= currentDialogNPC.dialog.length) {
+    // End of dialog
+    closeNPCDialog();
+  } else {
+    updateDialogText();
+  }
+}
+
+function updateDialogText() {
+  if (!npcDialogElement || !currentDialogNPC) return;
+
+  const textEl = npcDialogElement.querySelector('.dialog-text');
+  const nextBtn = npcDialogElement.querySelector('.dialog-next');
+
+  if (textEl) {
+    textEl.textContent = currentDialogNPC.dialog[currentDialogIndex];
+  }
+
+  // Update button text for last message
+  if (nextBtn) {
+    const isLastMessage = currentDialogIndex >= currentDialogNPC.dialog.length - 1;
+    nextBtn.textContent = isLastMessage ? 'Close' : 'Continue';
+  }
+}
+
+export function isNPCDialogOpen() {
+  return npcDialogElement?.classList.contains('visible') || false;
+}
+
 function closeAll() {
   if (panelElement?.classList.contains('open')) {
     closePanel();
@@ -325,6 +419,8 @@ function closeAll() {
     closeCaptainsLog();
   } else if (messageBottleElement?.classList.contains('visible')) {
     closeMessageBottle();
+  } else if (npcDialogElement?.classList.contains('visible')) {
+    closeNPCDialog();
   }
 }
 
@@ -390,4 +486,29 @@ function closeLightbox() {
   if (img) {
     img.src = '';
   }
+}
+
+// Transition overlay functions
+export function fadeOut(duration = 400) {
+  return new Promise(resolve => {
+    if (!transitionOverlay) {
+      resolve();
+      return;
+    }
+    transitionOverlay.style.transition = `opacity ${duration}ms ease`;
+    transitionOverlay.classList.add('active');
+    setTimeout(resolve, duration);
+  });
+}
+
+export function fadeIn(duration = 400) {
+  return new Promise(resolve => {
+    if (!transitionOverlay) {
+      resolve();
+      return;
+    }
+    transitionOverlay.style.transition = `opacity ${duration}ms ease`;
+    transitionOverlay.classList.remove('active');
+    setTimeout(resolve, duration);
+  });
 }

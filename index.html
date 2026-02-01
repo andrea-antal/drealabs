@@ -23,6 +23,17 @@
   <!-- Game Container -->
   <div id="game-container"></div>
 
+  <!-- Transition Overlay -->
+  <div id="transition-overlay"></div>
+
+  <!-- Portal Arrow Indicators -->
+  <div id="portal-arrow-left" class="portal-arrow">
+    <img src="assets/arrow-left.png" alt="Go left" class="arrow-icon">
+  </div>
+  <div id="portal-arrow-right" class="portal-arrow">
+    <img src="assets/arrow-right.png" alt="Go right" class="arrow-icon">
+  </div>
+
   <!-- Speech Bubble -->
   <div id="speech-bubble">
     <span class="bubble-text">Hello! Click on a tank to explore.</span>
@@ -40,6 +51,12 @@
 
   <!-- Controls Hint -->
   <div id="controls-hint">Tap/click around to explore<span class="keyboard-hint"><br>&nbsp;&nbsp;&nbsp;&nbsp;Use <kbd>&larr;</kbd> <kbd>&rarr;</kbd> to move</span></div>
+
+  <!-- Debug Coordinate Overlay -->
+  <div id="debug-coords" style="display: none; position: fixed; top: 10px; left: 10px; background: rgba(0,0,0,0.8); color: #00ffd0; font-family: monospace; font-size: 14px; padding: 10px 15px; border-radius: 4px; z-index: 9999; pointer-events: none;">
+    <div>X: <span id="debug-x">0</span></div>
+    <div>Y: <span id="debug-y">0</span></div>
+  </div>
 
   <!-- Loading Indicator -->
   <div id="loading">
@@ -98,6 +115,18 @@
   <div id="image-lightbox">
     <button id="lightbox-close" aria-label="Close lightbox">&times;</button>
     <img id="lightbox-image" src="" alt="">
+  </div>
+
+  <!-- NPC Dialog -->
+  <div id="npc-dialog">
+    <div class="dialog-content">
+      <div class="dialog-header">
+        <span class="dialog-name"></span>
+        <button id="dialog-close" aria-label="Close dialog">&times;</button>
+      </div>
+      <p class="dialog-text"></p>
+      <button class="dialog-next">Continue</button>
+    </div>
   </div>
 
   <script type="module" src="js/main.js"></script>

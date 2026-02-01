@@ -1,15 +1,20 @@
 import * as THREE from 'three';
-import { initScene, loadBackground, lerpCameraTo, screenToWorld, worldToScreen, render, getRenderer } from './scene.js';
-import { initCharacter, loadCharacterSprites, walkTo, update as updateCharacter, getPosition, setWalkBounds, getFloorY, isCharacterWalking } from './character.js';
-import { initHotspots, setEnabled as setHotspotsEnabled, getHoveredHotspot, checkProximityPulse } from './hotspots.js';
-import { initUI, showPanel, closePanel, isPanelOpen, showCaptainsLog, showMessageBottle } from './ui.js';
+import { initScene, loadBackground, lerpCameraTo, screenToWorld, worldToScreen, render, getRenderer, setSceneDimensions, disposeScene } from './scene.js';
+import { initCharacter, loadCharacterSprites, walkTo, update as updateCharacter, getPosition, setWalkBounds, getFloorY, isCharacterWalking, setPosition, setFloorY, stopWalking } from './character.js';
+import { initHotspots, setEnabled as setHotspotsEnabled, getHoveredHotspot, checkProximityPulse, disposeHotspots } from './hotspots.js';
+import { initNPCs, updateNPCs, setEnabled as setNPCsEnabled, disposeNPCs } from './npcs.js';
+import { initUI, showPanel, closePanel, isPanelOpen, showCaptainsLog, showMessageBottle, showNPCDialog, closeNPCDialog, isNPCDialogOpen, fadeOut, fadeIn } from './ui.js';
+import { initSceneManager, loadLevel, checkPortalTrigger, getCurrentLevel, isInTransition, setTransitioning, setCurrentLevel } from './scene-manager.js';
 
 let clock;
 let projectsData;
+let changelogData;
 let isLoading = true;
 let speechBubble;
 let thoughtBubble;
 let activeBubble = null; // 'speech' or 'thought'
+let portalArrowLeft;
+let portalArrowRight;
 
 // Bubble trigger tracking
 let lastActivityTime = 0;
@@ -18,6 +23,8 @@ let lastHoveredHotspot = null;
 let walkBoundsMin = -1800;
 let walkBoundsMax = 1800;
 let hasShownEdgeMessage = false;
+let hasShownWelcome = false;
+let hasShownChangelogBubble = false;
 
 // Bubble text options
 const idleThoughts = [
@@ -39,6 +46,7 @@ const afterPanelSpeech = [
 
 const firstWalkThought = "hmm, what's over here?";
 const edgeThought = "that's as far as I can go.";
+const portalThought = "ooh, what's over there?";
 
 const welcomeSpeech = [
   "Welcome to DREA LABS, glad you stopped by!\nClick on a tank and give it a try.",
@@ -83,6 +91,17 @@ async function loadProjectsData() {
   }
 }
 
+async function loadChangelogData() {
+  try {
+    const response = await fetch('data/changelog.json');
+    changelogData = await response.json();
+    return changelogData;
+  } catch (e) {
+    console.error('Failed to load changelog data:', e);
+    return null;
+  }
+}
+
 async function init() {
   // Check viewport first
   if (!checkViewport()) {
@@ -105,24 +124,34 @@ async function init() {
     return;
   }
 
+  // Load changelog data
+  await loadChangelogData();
+
   // Initialize Three.js scene
   const container = document.getElementById('game-container');
   initScene(container);
 
+  // Initialize scene manager
+  initSceneManager(data, onHotspotClicked);
+
+  // Get starting level
+  const startLevelId = data.startLevel || 'submarine-lab';
+  const startLevel = data.levels[startLevelId];
+
   // Load background
   try {
-    await loadBackground('assets/background.png');
+    await loadBackground(startLevel.background, startLevel.backgroundSRGB || false);
   } catch (e) {
     console.warn('Could not load background image, using solid color');
   }
 
   // Initialize character
-  const startX = data.scene?.characterStartX || 0;
-  const floorY = data.scene?.floorY || -400;
+  const startX = startLevel.characterStartX || 0;
+  const floorY = startLevel.floorY || -400;
   await initCharacter(startX, floorY);
 
   // Set walk bounds based on scene
-  const sceneWidth = data.scene?.width || 4096;
+  const sceneWidth = startLevel.width || 4096;
   walkBoundsMin = -sceneWidth / 2 + 200;
   walkBoundsMax = sceneWidth / 2 - 200;
   setWalkBounds(walkBoundsMin, walkBoundsMax);
@@ -138,8 +167,13 @@ async function init() {
     console.warn('Could not load character sprites, using placeholder');
   }
 
-  // Initialize hotspots
-  initHotspots(data.projects, onHotspotClicked);
+  // Initialize hotspots with projects from the starting level
+  initHotspots(startLevel.projects, onHotspotClicked);
+
+  // Initialize NPCs if present in the level
+  if (startLevel.npcs && startLevel.npcs.length > 0) {
+    initNPCs(startLevel.npcs, onNPCClicked);
+  }
 
   // Initialize UI
   initUI(onPanelClosed);
@@ -156,7 +190,22 @@ async function init() {
   speechBubble = document.getElementById('speech-bubble');
   thoughtBubble = document.getElementById('thought-bubble');
   lastActivityTime = Date.now();
+
+  // Initialize portal arrows
+  portalArrowLeft = document.getElementById('portal-arrow-left');
+  portalArrowRight = document.getElementById('portal-arrow-right');
+
+  // Portal arrow click handlers
+  portalArrowLeft?.addEventListener('click', () => {
+    const portal = getPortalByEdge('left');
+    if (portal) handlePortalTransition(portal);
+  });
+  portalArrowRight?.addEventListener('click', () => {
+    const portal = getPortalByEdge('right');
+    if (portal) handlePortalTransition(portal);
+  });
   setTimeout(() => {
+    hasShownWelcome = true;
     showSpeechBubble(randomFrom(welcomeSpeech), 0); // Stay until user clicks
   }, 500);
 
@@ -174,13 +223,24 @@ function setupFloorClick() {
   renderer.domElement.addEventListener('click', (event) => {
     // Hide bubble on interaction
     if (activeBubble) {
+      const wasWelcomeBubble = hasShownWelcome && !hasShownChangelogBubble;
       hideBubble();
+
+      // Show changelog bubble after welcome is dismissed
+      if (wasWelcomeBubble && changelogData?.entries?.length > 0) {
+        hasShownChangelogBubble = true;
+        const latest = changelogData.entries[0];
+        const date = new Date(latest.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        setTimeout(() => {
+          showSpeechBubble(`New in v${latest.version} (${date}): ${latest.title}!`, 5000);
+        }, 300);
+      }
     }
 
     // Reset activity timer
     lastActivityTime = Date.now();
 
-    if (isPanelOpen()) return;
+    if (isPanelOpen() || isNPCDialogOpen() || isInTransition()) return;
 
     // Convert screen to world coordinates
     const world = screenToWorld(event.clientX, event.clientY);
@@ -207,7 +267,7 @@ function setupKeyboardControls() {
   const moveDistance = 400; // How far to move per key press
 
   document.addEventListener('keydown', (event) => {
-    if (isPanelOpen()) return;
+    if (isPanelOpen() || isNPCDialogOpen() || isInTransition()) return;
 
     // Reset activity timer
     lastActivityTime = Date.now();
@@ -235,8 +295,9 @@ function setupKeyboardControls() {
 }
 
 function onHotspotClicked(project) {
-  // Disable hotspots while panel is open
+  // Disable hotspots and NPCs while panel is open
   setHotspotsEnabled(false);
+  setNPCsEnabled(false);
 
   // Check for special hotspots
   if (project.id === 'helm') {
@@ -249,18 +310,37 @@ function onHotspotClicked(project) {
 }
 
 function onPanelClosed() {
-  // Re-enable hotspots
+  // Re-enable hotspots and NPCs
   setHotspotsEnabled(true);
+  setNPCsEnabled(true);
 
   // Reset activity timer
   lastActivityTime = Date.now();
 
   // Show reaction after closing panel
   setTimeout(() => {
-    if (!activeBubble && !isPanelOpen()) {
+    if (!activeBubble && !isPanelOpen() && !isNPCDialogOpen()) {
       showSpeechBubble(randomFrom(afterPanelSpeech), 3000);
     }
   }, 300);
+}
+
+function onNPCClicked(npc) {
+  // Disable hotspots and NPCs while dialog is open
+  setHotspotsEnabled(false);
+  setNPCsEnabled(false);
+
+  // Hide any active bubble
+  hideBubble();
+
+  // Check interaction type
+  if (npc.interactionType === 'minigame' && npc.minigameId) {
+    // Mini-game hook for Phase 3 - for now, just show dialog
+    showNPCDialog(npc);
+  } else {
+    // Show dialog
+    showNPCDialog(npc);
+  }
 }
 
 function showSpeechBubble(text, duration = 5000) {
@@ -305,6 +385,43 @@ function hideBubble() {
   activeBubble = null;
 }
 
+function getPortalByEdge(edge) {
+  const currentLevel = getCurrentLevel();
+  if (!currentLevel || !currentLevel.portals) return null;
+  return currentLevel.portals.find(p => p.edge === edge) || null;
+}
+
+function updatePortalArrows() {
+  const currentLevel = getCurrentLevel();
+  if (!currentLevel || !currentLevel.portals || isInTransition() || isPanelOpen()) {
+    // Hide both arrows during transition, panel open, or if no level
+    portalArrowLeft?.classList.remove('visible');
+    portalArrowRight?.classList.remove('visible');
+    return;
+  }
+
+  const charPos = getPosition();
+  const proximityThreshold = 400; // Show arrow when within this distance of portal trigger
+
+  for (const portal of currentLevel.portals) {
+    if (portal.edge === 'left') {
+      const distance = charPos.x - portal.triggerX;
+      if (distance <= proximityThreshold && distance >= -100) {
+        portalArrowLeft?.classList.add('visible');
+      } else {
+        portalArrowLeft?.classList.remove('visible');
+      }
+    } else if (portal.edge === 'right') {
+      const distance = portal.triggerX - charPos.x;
+      if (distance <= proximityThreshold && distance >= -100) {
+        portalArrowRight?.classList.add('visible');
+      } else {
+        portalArrowRight?.classList.remove('visible');
+      }
+    }
+  }
+}
+
 function updateBubblePosition() {
   if (!activeBubble) return;
 
@@ -321,9 +438,79 @@ function updateBubblePosition() {
   bubble.style.top = `${screenPos.y - bubbleRect.height - offsetY}px`;
 }
 
+async function handlePortalTransition(portal) {
+  if (isInTransition()) return;
+
+  // Don't transition if panel is open
+  if (isPanelOpen()) return;
+
+  setTransitioning(true);
+  stopWalking();
+  setHotspotsEnabled(false);
+  setNPCsEnabled(false);
+  hideBubble();
+
+  // Fade out immediately to signal click registered
+  await fadeOut(300);
+
+  // Dispose current level
+  disposeHotspots();
+  disposeNPCs();
+  disposeScene();
+
+  // Get target level data
+  const targetLevel = projectsData.levels[portal.targetLevel];
+  if (!targetLevel) {
+    console.error(`Target level ${portal.targetLevel} not found`);
+    setTransitioning(false);
+    await fadeIn(400);
+    return;
+  }
+
+  // Update scene dimensions
+  setSceneDimensions(targetLevel.width, targetLevel.height);
+
+  // Load new background
+  try {
+    await loadBackground(targetLevel.background, targetLevel.backgroundSRGB || false);
+  } catch (e) {
+    console.warn(`Could not load background for ${portal.targetLevel}`);
+  }
+
+  // Reposition character
+  setFloorY(targetLevel.floorY);
+  setPosition(portal.targetSpawnX);
+
+  // Update walk bounds
+  walkBoundsMin = -targetLevel.width / 2 + 200;
+  walkBoundsMax = targetLevel.width / 2 - 200;
+  setWalkBounds(walkBoundsMin, walkBoundsMax);
+
+  // Update current level in scene manager
+  setCurrentLevel(portal.targetLevel);
+
+  // Initialize hotspots for new level
+  initHotspots(targetLevel.projects, onHotspotClicked);
+
+  // Initialize NPCs for new level
+  if (targetLevel.npcs && targetLevel.npcs.length > 0) {
+    initNPCs(targetLevel.npcs, onNPCClicked);
+  }
+
+  // Reset edge message flag
+  hasShownEdgeMessage = false;
+
+  // Fade in
+  await fadeIn(400);
+
+  setHotspotsEnabled(true);
+  setNPCsEnabled(true);
+  setTransitioning(false);
+}
+
 function checkBubbleTriggers() {
-  // Don't trigger if bubble is showing or panel is open
-  if (activeBubble || isPanelOpen()) return;
+  // Don't trigger if bubble is showing, panel is open, dialog is open, or transitioning
+  if (activeBubble || isPanelOpen() || isNPCDialogOpen() || isInTransition()) return;
 
   const charPos = getPosition();
   const isWalking = isCharacterWalking();
@@ -336,12 +523,24 @@ function checkBubbleTriggers() {
     return;
   }
 
-  // 2. Edge detection
+  // 2. Edge detection (only show "can't go further" if no portal)
+  const currentLevel = getCurrentLevel();
   const edgeThreshold = 50;
   const nearLeftEdge = charPos.x <= walkBoundsMin + edgeThreshold;
   const nearRightEdge = charPos.x >= walkBoundsMax - edgeThreshold;
 
-  if ((nearLeftEdge || nearRightEdge) && !isWalking && !hasShownEdgeMessage) {
+  // Check if there's a portal at this edge
+  let hasPortalAtEdge = false;
+  if (currentLevel && currentLevel.portals) {
+    for (const portal of currentLevel.portals) {
+      if ((nearRightEdge && portal.edge === 'right') || (nearLeftEdge && portal.edge === 'left')) {
+        hasPortalAtEdge = true;
+        break;
+      }
+    }
+  }
+
+  if ((nearLeftEdge || nearRightEdge) && !isWalking && !hasShownEdgeMessage && !hasPortalAtEdge) {
     hasShownEdgeMessage = true;
     showThoughtBubble(edgeThought, 3000);
     // Reset edge message flag after a delay
@@ -380,6 +579,9 @@ function animate() {
   // Update character
   updateCharacter(deltaTime);
 
+  // Update NPCs (bob animation)
+  updateNPCs(deltaTime);
+
   // Camera follows character
   const charPos = getPosition();
   lerpCameraTo(charPos.x, 0.05);
@@ -390,7 +592,10 @@ function animate() {
   // Update speech bubble position
   updateBubblePosition();
 
-  // Check bubble triggers
+  // Update portal arrow visibility
+  updatePortalArrows();
+
+  // Check bubble triggers (includes portal detection)
   checkBubbleTriggers();
 
   // Render

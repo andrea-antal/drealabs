@@ -38,6 +38,98 @@ body {
   display: block;
 }
 
+/* Transition Overlay */
+#transition-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: var(--bg);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.4s ease;
+  z-index: 500;
+}
+
+#transition-overlay.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Portal Arrow Indicators */
+.portal-arrow {
+  position: fixed;
+  top: 1.5rem;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+  z-index: 50;
+  pointer-events: none;
+  cursor: pointer;
+}
+
+.portal-arrow.visible {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+
+.portal-arrow:hover .arrow-icon {
+  filter: drop-shadow(0 0 15px rgba(0, 255, 208, 0.8)) drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
+}
+
+#portal-arrow-left {
+  left: 2rem;
+}
+
+#portal-arrow-right {
+  right: 2rem;
+}
+
+.arrow-icon {
+  display: block;
+  width: 160px;
+  height: auto;
+  filter: drop-shadow(0 0 10px rgba(0, 255, 208, 0.5)) drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
+}
+
+@media (max-height: 600px) {
+  .arrow-icon {
+    width: 100px;
+  }
+  .portal-arrow {
+    top: 1rem;
+  }
+}
+
+@media (max-height: 500px) {
+  .arrow-icon {
+    width: 80px;
+  }
+  .portal-arrow {
+    top: 0.5rem;
+  }
+}
+
+#portal-arrow-left .arrow-icon {
+  animation: arrow-bob-left 1s ease-in-out infinite;
+}
+
+#portal-arrow-right .arrow-icon {
+  animation: arrow-bob-right 1s ease-in-out infinite;
+}
+
+@keyframes arrow-bob-left {
+  0%, 100% { transform: translateX(0); }
+  50% { transform: translateX(-8px); }
+}
+
+@keyframes arrow-bob-right {
+  0%, 100% { transform: translateX(0); }
+  50% { transform: translateX(8px); }
+}
+
 /* Loading Indicator */
 #loading {
   position: fixed;
@@ -767,4 +859,100 @@ body {
   #controls-hint .keyboard-hint {
     display: none;
   }
+}
+
+/* NPC Dialog */
+#npc-dialog {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 150;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+#npc-dialog.visible {
+  opacity: 1;
+  visibility: visible;
+}
+
+.dialog-content {
+  background: var(--bg-lighter);
+  border: 2px solid var(--accent);
+  border-radius: 8px;
+  padding: 1.5rem;
+  max-width: 400px;
+  width: 90%;
+  transform: scale(0.9);
+  transition: transform 0.3s ease;
+}
+
+#npc-dialog.visible .dialog-content {
+  transform: scale(1);
+}
+
+.dialog-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.dialog-name {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+#dialog-close {
+  width: 28px;
+  height: 28px;
+  background: transparent;
+  border: 1px solid var(--text-muted);
+  border-radius: 4px;
+  color: var(--text);
+  font-size: 1.25rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: border-color 0.2s ease, color 0.2s ease;
+}
+
+#dialog-close:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.dialog-text {
+  font-size: 1rem;
+  line-height: 1.6;
+  color: var(--text);
+  margin-bottom: 1.5rem;
+  min-height: 3rem;
+}
+
+.dialog-next {
+  display: block;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background: transparent;
+  border: 1px solid var(--accent);
+  border-radius: 4px;
+  color: var(--accent);
+  font-family: inherit;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.dialog-next:hover {
+  background: var(--accent);
+  color: var(--bg);
 }

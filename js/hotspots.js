@@ -9,6 +9,14 @@ let hoveredHotspot = null;
 let onHotspotClick = null;
 let enabled = true;
 
+// Store bound handlers for cleanup
+let mouseMoveHandler = null;
+let clickHandler = null;
+let resizeHandler = null;
+
+// Debug mode - set to true to see hotspots
+const DEBUG_HOTSPOTS = false;
+
 // Idle pulse animation (for touch/small screens only)
 let pulsingHotspot = null;
 let pulsePhase = 0;
@@ -31,9 +39,10 @@ export function initHotspots(projects, clickCallback) {
   onHotspotClick = clickCallback;
 
   // Filter out placeholder projects (keep real projects and special hotspots like helm/sonar)
-  const activeProjects = projects.filter(p =>
-    !p.description.startsWith('Placeholder description')
-  );
+  // In debug mode, show all hotspots
+  const activeProjects = DEBUG_HOTSPOTS
+    ? projects
+    : projects.filter(p => !p.description.startsWith('Placeholder description'));
 
   // Create invisible meshes for each hotspot
   activeProjects.forEach((project) => {
@@ -57,8 +66,6 @@ export function initHotspots(projects, clickCallback) {
     shape.quadraticCurveTo(-w, -h, -w + r, -h);
 
     const geometry = new THREE.ShapeGeometry(shape);
-    // Debug mode - set to true to see hotspots
-    const DEBUG_HOTSPOTS = false;
 
     const material = new THREE.MeshBasicMaterial({
       transparent: true,
@@ -75,14 +82,18 @@ export function initHotspots(projects, clickCallback) {
     hotspotMeshes.push(mesh);
   });
 
-  // Add event listeners
+  // Add event listeners (store handlers for cleanup)
+  mouseMoveHandler = onMouseMove;
+  clickHandler = onClick;
+  resizeHandler = checkPulseEnabled;
+
   const canvas = getRenderer().domElement;
-  canvas.addEventListener('mousemove', onMouseMove);
-  canvas.addEventListener('click', onClick);
+  canvas.addEventListener('mousemove', mouseMoveHandler);
+  canvas.addEventListener('click', clickHandler);
 
   // Start idle pulse animation for small screens (< 800px)
   checkPulseEnabled();
-  window.addEventListener('resize', checkPulseEnabled);
+  window.addEventListener('resize', resizeHandler);
 }
 
 function checkPulseEnabled() {
@@ -103,7 +114,7 @@ function checkPulseEnabled() {
       pulseInterval = null;
     }
     if (pulsingHotspot) {
-      pulsingHotspot.material.opacity = 0;
+      pulsingHotspot.material.opacity = DEBUG_HOTSPOTS ? 0.3 : 0;
       pulsingHotspot = null;
     }
   }
@@ -156,14 +167,16 @@ function animatePulse() {
 
   pulsePhase += speed;
 
+  const baseOpacity = DEBUG_HOTSPOTS ? 0.3 : 0;
+
   if (pulsePhase <= 1) {
     // Fade in and out using sine wave
     const opacity = Math.sin(pulsePhase * Math.PI) * maxOpacity;
-    pulsingHotspot.material.opacity = opacity;
+    pulsingHotspot.material.opacity = Math.max(opacity, baseOpacity);
     requestAnimationFrame(animatePulse);
   } else {
     // Pulse complete
-    pulsingHotspot.material.opacity = 0;
+    pulsingHotspot.material.opacity = baseOpacity;
     pulsingHotspot = null;
     scheduleNextPulse();
   }
@@ -190,20 +203,36 @@ function onMouseMove(event) {
   if (!enabled) return;
 
   const renderer = getRenderer();
+  const camera = getCamera();
   const rect = renderer.domElement.getBoundingClientRect();
 
   mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
   mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
 
-  raycaster.setFromCamera(mouse, getCamera());
+  // Debug coordinate display
+  if (DEBUG_HOTSPOTS) {
+    const debugEl = document.getElementById('debug-coords');
+    if (debugEl) {
+      debugEl.style.display = 'block';
+      // Convert screen coords to world coords
+      const worldX = Math.round(mouse.x * (camera.right - camera.left) / 2 + camera.position.x);
+      const worldY = Math.round(mouse.y * (camera.top - camera.bottom) / 2 + camera.position.y);
+      document.getElementById('debug-x').textContent = worldX;
+      document.getElementById('debug-y').textContent = worldY;
+    }
+  }
+
+  raycaster.setFromCamera(mouse, camera);
   const intersects = raycaster.intersectObjects(hotspotMeshes);
+
+  const baseOpacity = DEBUG_HOTSPOTS ? 0.3 : 0;
 
   if (intersects.length > 0) {
     const newHovered = intersects[0].object;
     if (hoveredHotspot !== newHovered) {
       // Remove glow from previous hotspot (unless it's pulsing)
       if (hoveredHotspot && hoveredHotspot !== pulsingHotspot) {
-        hoveredHotspot.material.opacity = 0;
+        hoveredHotspot.material.opacity = baseOpacity;
       }
       // Stop pulse on this hotspot if it was pulsing
       if (newHovered === pulsingHotspot) {
@@ -217,7 +246,7 @@ function onMouseMove(event) {
   } else {
     if (hoveredHotspot) {
       // Remove glow
-      hoveredHotspot.material.opacity = 0;
+      hoveredHotspot.material.opacity = baseOpacity;
       hoveredHotspot = null;
       renderer.domElement.style.cursor = 'default';
     }
@@ -252,25 +281,27 @@ function onClick(event) {
 
 export function setEnabled(value) {
   enabled = value;
+  const baseOpacity = DEBUG_HOTSPOTS ? 0.3 : 0;
+
   if (!enabled) {
     const renderer = getRenderer();
     renderer.domElement.style.cursor = 'default';
 
     // Reset hovered hotspot opacity before nulling
     if (hoveredHotspot) {
-      hoveredHotspot.material.opacity = 0;
+      hoveredHotspot.material.opacity = baseOpacity;
       hoveredHotspot = null;
     }
 
     // Stop and reset any proximity pulse in progress
     proximityPulsingHotspots.forEach(hotspot => {
-      hotspot.material.opacity = 0;
+      hotspot.material.opacity = baseOpacity;
     });
     proximityPulsingHotspots = [];
 
     // Stop and reset any idle pulse in progress
     if (pulsingHotspot) {
-      pulsingHotspot.material.opacity = 0;
+      pulsingHotspot.material.opacity = baseOpacity;
       pulsingHotspot = null;
     }
   }
@@ -324,6 +355,7 @@ function startProximityPulse(hotspots) {
 function animateProximityPulse() {
   if (proximityPulsingHotspots.length === 0) return;
 
+  const baseOpacity = DEBUG_HOTSPOTS ? 0.3 : 0;
   proximityPulsePhase += 0.025;
 
   if (proximityPulsePhase <= 1) {
@@ -332,7 +364,7 @@ function animateProximityPulse() {
     proximityPulsingHotspots.forEach(hotspot => {
       // Don't animate if being hovered
       if (hotspot !== hoveredHotspot) {
-        hotspot.material.opacity = opacity;
+        hotspot.material.opacity = Math.max(opacity, baseOpacity);
       }
     });
     requestAnimationFrame(animateProximityPulse);
@@ -340,9 +372,50 @@ function animateProximityPulse() {
     // Pulse complete
     proximityPulsingHotspots.forEach(hotspot => {
       if (hotspot !== hoveredHotspot) {
-        hotspot.material.opacity = 0;
+        hotspot.material.opacity = baseOpacity;
       }
     });
     proximityPulsingHotspots = [];
   }
+}
+
+export function disposeHotspots() {
+  const scene = getScene();
+  const canvas = getRenderer().domElement;
+
+  // Remove event listeners
+  if (mouseMoveHandler) {
+    canvas.removeEventListener('mousemove', mouseMoveHandler);
+    mouseMoveHandler = null;
+  }
+  if (clickHandler) {
+    canvas.removeEventListener('click', clickHandler);
+    clickHandler = null;
+  }
+  if (resizeHandler) {
+    window.removeEventListener('resize', resizeHandler);
+    resizeHandler = null;
+  }
+
+  // Stop pulse intervals
+  if (pulseInterval) {
+    clearTimeout(pulseInterval);
+    pulseInterval = null;
+  }
+
+  // Remove and dispose all hotspot meshes
+  hotspotMeshes.forEach(mesh => {
+    scene.remove(mesh);
+    mesh.geometry.dispose();
+    mesh.material.dispose();
+  });
+  hotspotMeshes = [];
+
+  // Reset state
+  hoveredHotspot = null;
+  pulsingHotspot = null;
+  proximityPulsingHotspots = [];
+  lastProximityPulsedIds.clear();
+  pulseEnabled = false;
+  enabled = true;
 }

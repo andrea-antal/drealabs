@@ -1,6 +1,17 @@
 {
   "entries": [
     {
+      "version": "0.3",
+      "date": "2026-01-31",
+      "title": "NPCs & Engine Room",
+      "changes": [
+        "New level: Steam Engine Room",
+        "Portal arrows for level transitions",
+        "Interactive NPCs with dialog system",
+        "Meet Engineer Bob in the engine room"
+      ]
+    },
+    {
       "version": "0.2",
       "date": "2026-01-30",
       "title": "Project Screenshots",
