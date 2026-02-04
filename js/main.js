@@ -3,7 +3,7 @@ import { initScene, loadBackground, lerpCameraTo, screenToWorld, worldToScreen, 
 import { initCharacter, loadCharacterSprites, walkTo, update as updateCharacter, getPosition, setWalkBounds, getFloorY, isCharacterWalking, setPosition, setFloorY, stopWalking } from './character.js';
 import { initHotspots, setEnabled as setHotspotsEnabled, getHoveredHotspot, checkProximityPulse, disposeHotspots } from './hotspots.js';
 import { initNPCs, updateNPCs, setEnabled as setNPCsEnabled, disposeNPCs } from './npcs.js';
-import { initUI, showPanel, closePanel, isPanelOpen, showCaptainsLog, showMessageBottle, showNPCDialog, closeNPCDialog, isNPCDialogOpen, fadeOut, fadeIn } from './ui.js';
+import { initUI, showPanel, closePanel, isPanelOpen, showCaptainsLog, showMessageBottle, showNPCDialog, closeNPCDialog, isNPCDialogOpen, showGuestbook, isGuestbookOpen, fadeOut, fadeIn } from './ui.js';
 import { initSceneManager, loadLevel, checkPortalTrigger, getCurrentLevel, isInTransition, setTransitioning, setCurrentLevel } from './scene-manager.js';
 
 let clock;
@@ -240,7 +240,7 @@ function setupFloorClick() {
     // Reset activity timer
     lastActivityTime = Date.now();
 
-    if (isPanelOpen() || isNPCDialogOpen() || isInTransition()) return;
+    if (isPanelOpen() || isNPCDialogOpen() || isGuestbookOpen() || isInTransition()) return;
 
     // Convert screen to world coordinates
     const world = screenToWorld(event.clientX, event.clientY);
@@ -252,7 +252,7 @@ function setupFloorClick() {
       if (!hasWalkedOnce) {
         hasWalkedOnce = true;
         setTimeout(() => {
-          if (!activeBubble && !isPanelOpen()) {
+          if (!activeBubble && !isPanelOpen() && !isGuestbookOpen()) {
             showThoughtBubble(firstWalkThought, 3000);
           }
         }, 500);
@@ -267,7 +267,7 @@ function setupKeyboardControls() {
   const moveDistance = 400; // How far to move per key press
 
   document.addEventListener('keydown', (event) => {
-    if (isPanelOpen() || isNPCDialogOpen() || isInTransition()) return;
+    if (isPanelOpen() || isNPCDialogOpen() || isGuestbookOpen() || isInTransition()) return;
 
     // Reset activity timer
     lastActivityTime = Date.now();
@@ -279,7 +279,7 @@ function setupKeyboardControls() {
       if (!hasWalkedOnce) {
         hasWalkedOnce = true;
         setTimeout(() => {
-          if (!activeBubble && !isPanelOpen()) {
+          if (!activeBubble && !isPanelOpen() && !isGuestbookOpen()) {
             showThoughtBubble(firstWalkThought, 3000);
           }
         }, 500);
@@ -304,6 +304,8 @@ function onHotspotClicked(project) {
     showCaptainsLog();
   } else if (project.id === 'sonar') {
     showMessageBottle();
+  } else if (project.id === 'guestbook') {
+    showGuestbook();
   } else {
     showPanel(project);
   }
@@ -319,7 +321,7 @@ function onPanelClosed() {
 
   // Show reaction after closing panel
   setTimeout(() => {
-    if (!activeBubble && !isPanelOpen() && !isNPCDialogOpen()) {
+    if (!activeBubble && !isPanelOpen() && !isNPCDialogOpen() && !isGuestbookOpen()) {
       showSpeechBubble(randomFrom(afterPanelSpeech), 3000);
     }
   }, 300);
@@ -393,7 +395,7 @@ function getPortalByEdge(edge) {
 
 function updatePortalArrows() {
   const currentLevel = getCurrentLevel();
-  if (!currentLevel || !currentLevel.portals || isInTransition() || isPanelOpen()) {
+  if (!currentLevel || !currentLevel.portals || isInTransition() || isPanelOpen() || isGuestbookOpen()) {
     // Hide both arrows during transition, panel open, or if no level
     portalArrowLeft?.classList.remove('visible');
     portalArrowRight?.classList.remove('visible');
@@ -441,8 +443,8 @@ function updateBubblePosition() {
 async function handlePortalTransition(portal) {
   if (isInTransition()) return;
 
-  // Don't transition if panel is open
-  if (isPanelOpen()) return;
+  // Don't transition if panel or guestbook is open
+  if (isPanelOpen() || isGuestbookOpen()) return;
 
   setTransitioning(true);
   stopWalking();
@@ -509,8 +511,8 @@ async function handlePortalTransition(portal) {
 }
 
 function checkBubbleTriggers() {
-  // Don't trigger if bubble is showing, panel is open, dialog is open, or transitioning
-  if (activeBubble || isPanelOpen() || isNPCDialogOpen() || isInTransition()) return;
+  // Don't trigger if bubble is showing, panel is open, dialog is open, guestbook is open, or transitioning
+  if (activeBubble || isPanelOpen() || isNPCDialogOpen() || isGuestbookOpen() || isInTransition()) return;
 
   const charPos = getPosition();
   const isWalking = isCharacterWalking();
@@ -556,7 +558,7 @@ function checkBubbleTriggers() {
     lastHoveredHotspot = hoveredHotspot;
     // Small delay to make it feel natural
     setTimeout(() => {
-      if (!activeBubble && !isPanelOpen() && getHoveredHotspot() === hoveredHotspot) {
+      if (!activeBubble && !isPanelOpen() && !isGuestbookOpen() && getHoveredHotspot() === hoveredHotspot) {
         showSpeechBubble(randomFrom(nearHotspotSpeech), 2500);
       }
     }, 800);

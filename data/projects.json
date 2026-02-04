@@ -338,6 +338,15 @@
           "links": {},
           "screenshots": [],
           "hotspot": { "x": 1901, "y": 317, "width": 190, "height": 188 }
+        },
+        {
+          "id": "guestbook",
+          "title": "Guestbook",
+          "description": "Sign the guestbook",
+          "tech": [],
+          "links": {},
+          "screenshots": [],
+          "hotspot": { "x": 28, "y": -59, "width": 165, "height": 128 }
         }
       ],
       "npcs": []

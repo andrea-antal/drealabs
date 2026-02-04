@@ -1,3 +1,5 @@
+import { fetchGuestbookEntries, submitGuestbookEntry, formatRelativeTime, canSubmit, getCooldownRemaining } from './supabase.js';
+
 let panelElement;
 let backdropElement;
 let captainsLogElement;
@@ -5,6 +7,7 @@ let messageBottleElement;
 let lightboxElement;
 let transitionOverlay;
 let npcDialogElement;
+let guestbookElement;
 let isOpen = false;
 let onCloseCallback = null;
 let changelogLoaded = false;
@@ -62,6 +65,7 @@ export function initUI(closeCallback) {
   lightboxElement = document.getElementById('image-lightbox');
   transitionOverlay = document.getElementById('transition-overlay');
   npcDialogElement = document.getElementById('npc-dialog');
+  guestbookElement = document.getElementById('guestbook-panel');
   onCloseCallback = closeCallback;
 
   // Close on backdrop click
@@ -168,6 +172,30 @@ export function initUI(closeCallback) {
     const dialogNextBtn = npcDialogElement.querySelector('.dialog-next');
     if (dialogNextBtn) {
       dialogNextBtn.addEventListener('click', advanceDialog);
+    }
+  }
+
+  // Guestbook handlers
+  if (guestbookElement) {
+    // Close button
+    const guestbookCloseBtn = document.getElementById('guestbook-close');
+    if (guestbookCloseBtn) {
+      guestbookCloseBtn.addEventListener('click', closeGuestbook);
+    }
+
+    // Form submission
+    const guestbookForm = document.getElementById('guestbook-form');
+    if (guestbookForm) {
+      guestbookForm.addEventListener('submit', handleGuestbookSubmit);
+
+      // Character count for message
+      const messageInput = guestbookForm.querySelector('textarea[name="message"]');
+      const charCount = guestbookForm.querySelector('.guestbook-char-count');
+      if (messageInput && charCount) {
+        messageInput.addEventListener('input', () => {
+          charCount.textContent = `${messageInput.value.length}/500`;
+        });
+      }
     }
   }
 }
@@ -412,6 +440,191 @@ export function isNPCDialogOpen() {
   return npcDialogElement?.classList.contains('visible') || false;
 }
 
+// Guestbook functions
+export async function showGuestbook() {
+  if (!guestbookElement) return;
+
+  // Show panel with backdrop
+  guestbookElement.classList.add('open');
+  backdropElement.classList.add('open');
+  isOpen = true;
+
+  // Load entries
+  await loadGuestbookEntries();
+}
+
+export function closeGuestbook() {
+  if (!guestbookElement) return;
+
+  guestbookElement.classList.remove('open');
+  backdropElement.classList.remove('open');
+  isOpen = false;
+
+  // Clear form
+  const form = document.getElementById('guestbook-form');
+  if (form) {
+    form.reset();
+    const charCount = form.querySelector('.guestbook-char-count');
+    if (charCount) charCount.textContent = '0/500';
+    const errorEl = form.querySelector('.guestbook-error');
+    if (errorEl) errorEl.textContent = '';
+  }
+
+  if (onCloseCallback) {
+    onCloseCallback();
+  }
+}
+
+export function isGuestbookOpen() {
+  return guestbookElement?.classList.contains('open') || false;
+}
+
+async function loadGuestbookEntries() {
+  const container = document.getElementById('guestbook-entries');
+  if (!container) return;
+
+  container.innerHTML = '<p class="guestbook-loading">Loading entries...</p>';
+
+  const entries = await fetchGuestbookEntries();
+
+  if (entries.length === 0) {
+    container.innerHTML = '<p class="guestbook-empty">No entries yet. Be the first to sign!</p>';
+    return;
+  }
+
+  container.innerHTML = entries.map(entry => {
+    const flag = locationToFlag(entry.location);
+    const locationHtml = entry.location
+      ? (flag
+          ? `<span class="guestbook-entry-flag" title="${escapeHtml(entry.location)}">${flag}</span>`
+          : `<span class="guestbook-entry-location">${escapeHtml(entry.location)}</span>`)
+      : '';
+
+    return `
+      <div class="guestbook-entry">
+        <div class="guestbook-entry-header">
+          <div>
+            <span class="guestbook-entry-name">${escapeHtml(entry.name)}</span>
+            ${locationHtml}
+          </div>
+          <span class="guestbook-entry-time">${formatRelativeTime(entry.created_at)}</span>
+        </div>
+        <p class="guestbook-entry-message">${escapeHtml(entry.message)}</p>
+      </div>
+    `;
+  }).join('');
+}
+
+async function handleGuestbookSubmit(e) {
+  e.preventDefault();
+
+  const form = e.target;
+  const errorEl = form.querySelector('.guestbook-error');
+  const submitBtn = form.querySelector('.guestbook-submit');
+
+  // Check honeypot (if filled, it's a bot)
+  const honeypot = form.querySelector('input[name="website"]');
+  if (honeypot && honeypot.value) {
+    // Silently fail for bots
+    form.reset();
+    return;
+  }
+
+  // Get form values
+  const name = form.querySelector('input[name="name"]').value;
+  const location = form.querySelector('input[name="location"]').value;
+  const message = form.querySelector('textarea[name="message"]').value;
+
+  // Disable submit while processing
+  submitBtn.disabled = true;
+  submitBtn.textContent = 'Submitting...';
+  errorEl.textContent = '';
+
+  const result = await submitGuestbookEntry(name, location, message);
+
+  if (result.success) {
+    // Clear form and reload entries
+    form.reset();
+    const charCount = form.querySelector('.guestbook-char-count');
+    if (charCount) charCount.textContent = '0/500';
+    await loadGuestbookEntries();
+  } else {
+    errorEl.textContent = result.error;
+  }
+
+  submitBtn.disabled = false;
+  submitBtn.textContent = 'Sign Guestbook';
+}
+
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+// Convert location to country flag emoji
+function locationToFlag(location) {
+  if (!location) return null;
+
+  const loc = location.toLowerCase().trim();
+
+  // Map of common locations/countries to ISO 3166-1 alpha-2 codes
+  const countryMap = {
+    // Countries
+    'usa': 'US', 'united states': 'US', 'america': 'US', 'us': 'US',
+    'uk': 'GB', 'united kingdom': 'GB', 'england': 'GB', 'britain': 'GB', 'scotland': 'GB', 'wales': 'GB',
+    'canada': 'CA', 'australia': 'AU', 'new zealand': 'NZ', 'nz': 'NZ',
+    'germany': 'DE', 'france': 'FR', 'spain': 'ES', 'italy': 'IT', 'portugal': 'PT',
+    'netherlands': 'NL', 'holland': 'NL', 'belgium': 'BE', 'switzerland': 'CH',
+    'austria': 'AT', 'poland': 'PL', 'sweden': 'SE', 'norway': 'NO', 'denmark': 'DK', 'finland': 'FI',
+    'ireland': 'IE', 'greece': 'GR', 'turkey': 'TR', 'russia': 'RU', 'ukraine': 'UA',
+    'japan': 'JP', 'china': 'CN', 'korea': 'KR', 'south korea': 'KR', 'taiwan': 'TW',
+    'india': 'IN', 'pakistan': 'PK', 'bangladesh': 'BD', 'indonesia': 'ID',
+    'thailand': 'TH', 'vietnam': 'VN', 'philippines': 'PH', 'malaysia': 'MY', 'singapore': 'SG',
+    'brazil': 'BR', 'mexico': 'MX', 'argentina': 'AR', 'chile': 'CL', 'colombia': 'CO', 'peru': 'PE',
+    'south africa': 'ZA', 'egypt': 'EG', 'nigeria': 'NG', 'kenya': 'KE',
+    'israel': 'IL', 'uae': 'AE', 'saudi arabia': 'SA',
+    'czech republic': 'CZ', 'czechia': 'CZ', 'hungary': 'HU', 'romania': 'RO',
+    // Major cities (map to their countries)
+    'new york': 'US', 'nyc': 'US', 'los angeles': 'US', 'la': 'US', 'san francisco': 'US', 'sf': 'US',
+    'chicago': 'US', 'seattle': 'US', 'boston': 'US', 'austin': 'US', 'miami': 'US',
+    'london': 'GB', 'manchester': 'GB', 'birmingham': 'GB', 'edinburgh': 'GB',
+    'paris': 'FR', 'berlin': 'DE', 'munich': 'DE', 'frankfurt': 'DE',
+    'amsterdam': 'NL', 'rome': 'IT', 'milan': 'IT', 'madrid': 'ES', 'barcelona': 'ES',
+    'tokyo': 'JP', 'osaka': 'JP', 'beijing': 'CN', 'shanghai': 'CN', 'hong kong': 'HK',
+    'seoul': 'KR', 'taipei': 'TW', 'bangkok': 'TH', 'mumbai': 'IN', 'delhi': 'IN',
+    'sydney': 'AU', 'melbourne': 'AU', 'toronto': 'CA', 'vancouver': 'CA', 'montreal': 'CA',
+    'sao paulo': 'BR', 'rio': 'BR', 'mexico city': 'MX', 'buenos aires': 'AR',
+    'dubai': 'AE', 'tel aviv': 'IL', 'moscow': 'RU', 'stockholm': 'SE', 'oslo': 'NO',
+    'copenhagen': 'DK', 'helsinki': 'FI', 'dublin': 'IE', 'lisbon': 'PT', 'vienna': 'AT',
+    'brussels': 'BE', 'zurich': 'CH', 'geneva': 'CH', 'warsaw': 'PL', 'prague': 'CZ'
+  };
+
+  // Try exact match first
+  let code = countryMap[loc];
+
+  // If no exact match, try to find a key contained in the location
+  if (!code) {
+    for (const [key, value] of Object.entries(countryMap)) {
+      if (loc.includes(key) || key.includes(loc)) {
+        code = value;
+        break;
+      }
+    }
+  }
+
+  if (!code) return null;
+
+  // Convert country code to flag emoji (regional indicator symbols)
+  const flag = code
+    .toUpperCase()
+    .split('')
+    .map(char => String.fromCodePoint(0x1F1E6 + char.charCodeAt(0) - 65))
+    .join('');
+
+  return flag;
+}
+
 function closeAll() {
   if (panelElement?.classList.contains('open')) {
     closePanel();
@@ -421,6 +634,8 @@ function closeAll() {
     closeMessageBottle();
   } else if (npcDialogElement?.classList.contains('visible')) {
     closeNPCDialog();
+  } else if (guestbookElement?.classList.contains('open')) {
+    closeGuestbook();
   }
 }
 

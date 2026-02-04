@@ -956,3 +956,215 @@ body {
   background: var(--accent);
   color: var(--bg);
 }
+
+/* Guestbook Panel */
+#guestbook-panel {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0.9);
+  width: 90%;
+  max-width: 500px;
+  max-height: 85vh;
+  background: var(--bg-lighter);
+  border: 2px solid var(--accent);
+  border-radius: 8px;
+  padding: 2rem;
+  overflow-y: auto;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s ease, transform 0.3s ease;
+  z-index: 101;
+}
+
+#guestbook-panel.open {
+  opacity: 1;
+  visibility: visible;
+  transform: translate(-50%, -50%) scale(1);
+}
+
+#guestbook-close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  width: 32px;
+  height: 32px;
+  background: transparent;
+  border: 1px solid var(--text-muted);
+  border-radius: 4px;
+  color: var(--text);
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: border-color 0.2s ease, color 0.2s ease;
+}
+
+#guestbook-close:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.guestbook-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--accent);
+  margin-bottom: 1.5rem;
+}
+
+/* Guestbook Form */
+#guestbook-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+#guestbook-form input[type="text"],
+#guestbook-form textarea {
+  width: 100%;
+  padding: 0.75rem;
+  background: var(--bg);
+  border: 1px solid var(--text-muted);
+  border-radius: 4px;
+  color: var(--text);
+  font-family: inherit;
+  font-size: 0.9rem;
+  transition: border-color 0.2s ease;
+}
+
+#guestbook-form input[type="text"]:focus,
+#guestbook-form textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+#guestbook-form input[type="text"]::placeholder,
+#guestbook-form textarea::placeholder {
+  color: var(--text-muted);
+}
+
+#guestbook-form textarea {
+  min-height: 80px;
+  resize: vertical;
+}
+
+/* Honeypot field - hidden from users, visible to bots */
+#guestbook-form .honeypot {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+.guestbook-form-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
+.guestbook-char-count {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.guestbook-submit {
+  padding: 0.5rem 1rem;
+  background: transparent;
+  border: 1px solid var(--accent);
+  border-radius: 4px;
+  color: var(--accent);
+  font-family: inherit;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.guestbook-submit:hover:not(:disabled) {
+  background: var(--accent);
+  color: var(--bg);
+}
+
+.guestbook-submit:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.guestbook-error {
+  color: #ff6b6b;
+  font-size: 0.85rem;
+  margin: 0;
+  min-height: 1.25rem;
+}
+
+.guestbook-divider {
+  height: 1px;
+  background: var(--text-muted);
+  margin: 1.5rem 0;
+  opacity: 0.3;
+}
+
+/* Guestbook Entries */
+#guestbook-entries {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.guestbook-loading,
+.guestbook-empty {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  text-align: center;
+  padding: 1rem 0;
+}
+
+.guestbook-entry {
+  padding: 0.75rem 0;
+  border-bottom: 1px solid rgba(128, 128, 128, 0.2);
+}
+
+.guestbook-entry:last-child {
+  border-bottom: none;
+}
+
+.guestbook-entry-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.5rem;
+  margin-bottom: 0.25rem;
+}
+
+.guestbook-entry-name {
+  font-weight: 600;
+  color: var(--accent);
+  font-size: 0.9rem;
+}
+
+.guestbook-entry-location {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+}
+
+.guestbook-entry-location::before {
+  content: '- ';
+}
+
+.guestbook-entry-flag {
+  margin-left: 0.4rem;
+  cursor: help;
+}
+
+.guestbook-entry-time {
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  white-space: nowrap;
+}
+
+.guestbook-entry-message {
+  color: var(--text);
+  font-size: 0.9rem;
+  line-height: 1.5;
+  word-wrap: break-word;
+}

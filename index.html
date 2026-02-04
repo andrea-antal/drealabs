@@ -129,6 +129,30 @@
     </div>
   </div>
 
+  <!-- Guestbook Panel -->
+  <div id="guestbook-panel">
+    <button id="guestbook-close" aria-label="Close guestbook">&times;</button>
+    <h2 class="guestbook-title">Guestbook</h2>
+
+    <form id="guestbook-form">
+      <input type="text" name="name" placeholder="Name" required maxlength="50" autocomplete="name">
+      <input type="text" name="location" placeholder="Location (optional)" maxlength="50" autocomplete="address-level2">
+      <textarea name="message" placeholder="Leave a message..." required maxlength="500"></textarea>
+      <input type="text" name="website" class="honeypot" tabindex="-1" autocomplete="off" aria-hidden="true">
+      <div class="guestbook-form-footer">
+        <span class="guestbook-char-count">0/500</span>
+        <button type="submit" class="guestbook-submit">Sign Guestbook</button>
+      </div>
+      <p class="guestbook-error" aria-live="polite"></p>
+    </form>
+
+    <div class="guestbook-divider"></div>
+
+    <div id="guestbook-entries">
+      <p class="guestbook-loading">Loading entries...</p>
+    </div>
+  </div>
+
   <script type="module" src="js/main.js"></script>
 </body>
 </html>

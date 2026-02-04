@@ -1,5 +1,8 @@
 # CLAUDE.md
 
+## Session Reminders
+- [ ] Upcoming todo: simple portfolio
+
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 ## Project Overview
@@ -44,10 +47,10 @@ No build step required - static HTML/CSS/JS served directly by Vercel.
 
 **Local preview:**
 ```bash
-python3 -m http.server 8000
+python3 -m http.server 8001
 # or
-npx serve
-# then open http://localhost:8000
+npx serve -p 8001
+# then open http://localhost:8001
 ```
 
 ## Architecture
