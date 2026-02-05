@@ -3,13 +3,12 @@
     {
       "version": "0.5",
       "date": "2026-02-05",
-      "title": "Text Adventure",
+      "title": "Text Adventure & Links",
       "changes": [
-        "MUD-style text adventure at /adventure",
+        "Text adventure at /adventure via the computer",
         "Explore the Forgotten Archive across 5 rooms",
         "Projects revealed as mystical crystal orbs",
-        "Classic commands: look, examine, go, check",
-        "ASCII art maps for each room",
+        "Filing cabinet links to simple portfolio",
         "Easter eggs for adventure game veterans"
       ]
     },

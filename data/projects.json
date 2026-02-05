@@ -250,8 +250,8 @@
         },
         {
           "id": "computer",
-          "title": "Computer",
-          "description": "Placeholder description. Computer monitor hotspot",
+          "title": "Text Adventure",
+          "description": "Play the text adventure version of this portfolio",
           "tech": [],
           "links": {},
           "screenshots": [],
@@ -322,8 +322,8 @@
         },
         {
           "id": "filing-cabinet",
-          "title": "Filing Cabinet",
-          "description": "Placeholder description. Filing cabinet hotspot",
+          "title": "Simple Portfolio",
+          "description": "View the simple text-based portfolio",
           "tech": [],
           "links": {},
           "screenshots": [],

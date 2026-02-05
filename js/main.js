@@ -3,7 +3,7 @@ import { initScene, loadBackground, lerpCameraTo, screenToWorld, worldToScreen, 
 import { initCharacter, loadCharacterSprites, walkTo, update as updateCharacter, getPosition, setWalkBounds, getFloorY, isCharacterWalking, setPosition, setFloorY, stopWalking } from './character.js';
 import { initHotspots, setEnabled as setHotspotsEnabled, getHoveredHotspot, checkProximityPulse, disposeHotspots } from './hotspots.js';
 import { initNPCs, updateNPCs, setEnabled as setNPCsEnabled, disposeNPCs } from './npcs.js';
-import { initUI, showPanel, closePanel, isPanelOpen, showCaptainsLog, showMessageBottle, showNPCDialog, closeNPCDialog, isNPCDialogOpen, showGuestbook, isGuestbookOpen, fadeOut, fadeIn } from './ui.js';
+import { initUI, showPanel, closePanel, isPanelOpen, showCaptainsLog, showMessageBottle, showAdventureModal, showPortfolioModal, showNPCDialog, closeNPCDialog, isNPCDialogOpen, showGuestbook, isGuestbookOpen, fadeOut, fadeIn } from './ui.js';
 import { initSceneManager, loadLevel, checkPortalTrigger, getCurrentLevel, isInTransition, setTransitioning, setCurrentLevel } from './scene-manager.js';
 
 let clock;
@@ -306,6 +306,12 @@ function onHotspotClicked(project) {
     showMessageBottle();
   } else if (project.id === 'guestbook') {
     showGuestbook();
+  } else if (project.id === 'computer') {
+    // Show adventure modal
+    showAdventureModal();
+  } else if (project.id === 'filing-cabinet') {
+    // Show portfolio modal
+    showPortfolioModal();
   } else {
     showPanel(project);
   }

@@ -4,6 +4,8 @@ let panelElement;
 let backdropElement;
 let captainsLogElement;
 let messageBottleElement;
+let adventureModalElement;
+let portfolioModalElement;
 let lightboxElement;
 let transitionOverlay;
 let npcDialogElement;
@@ -64,6 +66,8 @@ export function initUI(closeCallback) {
   backdropElement = document.getElementById('panel-backdrop');
   captainsLogElement = document.getElementById('captains-log');
   messageBottleElement = document.getElementById('message-bottle');
+  adventureModalElement = document.getElementById('adventure-modal');
+  portfolioModalElement = document.getElementById('portfolio-modal');
   lightboxElement = document.getElementById('image-lightbox');
   transitionOverlay = document.getElementById('transition-overlay');
   npcDialogElement = document.getElementById('npc-dialog');
@@ -120,6 +124,28 @@ export function initUI(closeCallback) {
         closeMessageBottle();
       }
     });
+  }
+
+  // Adventure modal close handlers
+  if (adventureModalElement) {
+    adventureModalElement.addEventListener('click', (e) => {
+      if (e.target === adventureModalElement) {
+        closeAdventureModal();
+      }
+    });
+    const closeBtn = adventureModalElement.querySelector('.modal-close');
+    if (closeBtn) closeBtn.addEventListener('click', closeAdventureModal);
+  }
+
+  // Portfolio modal close handlers
+  if (portfolioModalElement) {
+    portfolioModalElement.addEventListener('click', (e) => {
+      if (e.target === portfolioModalElement) {
+        closePortfolioModal();
+      }
+    });
+    const closeBtn = portfolioModalElement.querySelector('.modal-close');
+    if (closeBtn) closeBtn.addEventListener('click', closePortfolioModal);
   }
 
   // Carousel arrow click handlers
@@ -371,6 +397,42 @@ export function closeMessageBottle() {
   if (!messageBottleElement) return;
 
   messageBottleElement.classList.remove('visible');
+  isOpen = false;
+
+  if (onCloseCallback) {
+    onCloseCallback();
+  }
+}
+
+export function showAdventureModal() {
+  if (!adventureModalElement) return;
+
+  adventureModalElement.classList.add('visible');
+  isOpen = true;
+}
+
+export function closeAdventureModal() {
+  if (!adventureModalElement) return;
+
+  adventureModalElement.classList.remove('visible');
+  isOpen = false;
+
+  if (onCloseCallback) {
+    onCloseCallback();
+  }
+}
+
+export function showPortfolioModal() {
+  if (!portfolioModalElement) return;
+
+  portfolioModalElement.classList.add('visible');
+  isOpen = true;
+}
+
+export function closePortfolioModal() {
+  if (!portfolioModalElement) return;
+
+  portfolioModalElement.classList.remove('visible');
   isOpen = false;
 
   if (onCloseCallback) {
