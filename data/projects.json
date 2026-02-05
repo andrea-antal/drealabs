@@ -93,12 +93,11 @@
         },
         {
           "id": "tank-5",
-          "title": "Project 5 - Robot",
-          "description": "Placeholder description for tank 5. Replace with actual project details.",
-          "tech": ["Tech1", "Tech2"],
+          "title": "Claude Powered Research Agent",
+          "description": "I wanted to use the Claude Agent SDK to build an agent, so I built one to do in depth research. The agent has a few preset topic domains, which each contain a tailored rubric to determine authenticity/veracity/authoritativeness/bias/trust. The agent outputs the research in synthesized markdown files. After research sessions are complete, I use Claude to have a discussion to pull data from the files. It's been a boon for writing and understanding new topics.",
+          "tech": ["Python"],
           "links": {
-            "live": "https://example.com",
-            "github": "https://github.com/example"
+            "github": "https://github.com/andrea-antal/project-researcher"
           },
           "screenshots": [],
           "hotspot": {
