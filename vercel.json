@@ -5,5 +5,11 @@
       "destination": "https://drealabs.substack.com",
       "permanent": false
     }
+  ],
+  "rewrites": [
+    {
+      "source": "/portfolio",
+      "destination": "/portfolio.html"
+    }
   ]
 }
