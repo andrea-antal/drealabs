@@ -1,7 +1,8 @@
 # CLAUDE.md
 
 ## Session Reminders
-- [ ] Upcoming todo: simple portfolio
+- [ ] Future idea: text-based adventure game version of portfolio
+- [x] simple portfolio (in progress)
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 

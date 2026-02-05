@@ -3,11 +3,11 @@
     {
       "version": "0.4",
       "date": "2026-02-04",
-      "title": "Guestbook",
+      "title": "Guestbook & Simple Portfolio",
       "changes": [
         "Sign the guestbook and leave a message",
         "Country flags for recognized locations",
-        "Powered by Supabase"
+        "Simple portfolio at /portfolio.html for non-gamers"
       ]
     },
     {

@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Portfolio - Drealabs</title>
+  <link rel="icon" type="image/png" href="favicon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #111111;
+      --bg-card: #161616;
+      --accent: #ffcc00;
+      --accent-dim: #cc9900;
+      --accent-glow: rgba(255, 204, 0, 0.15);
+      --text: #e8e4e0;
+      --text-muted: #8a8680;
+      --border: #2a2826;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    @keyframes blink {
+      0%, 50% { opacity: 1; }
+      51%, 100% { opacity: 0; }
+    }
+
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    html {
+      font-size: 16px;
+    }
+
+    body {
+      font-family: 'JetBrains Mono', monospace;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+      min-height: 100vh;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    /* CRT scanline effect */
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(0, 0, 0, 0.15) 2px,
+        rgba(0, 0, 0, 0.15) 4px
+      );
+      pointer-events: none;
+      z-index: 1000;
+    }
+
+
+    .container {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 3rem 1.5rem 4rem;
+    }
+
+    .logo {
+      color: var(--accent);
+      font-size: 1.75rem;
+      font-weight: 600;
+      letter-spacing: 0.2em;
+      margin-bottom: 0.5rem;
+      text-shadow: 0 0 20px var(--accent-glow), 0 0 40px var(--accent-glow);
+    }
+
+    header {
+      margin-bottom: 3rem;
+      padding-bottom: 1.5rem;
+      border-bottom: 1px dashed var(--border);
+    }
+
+    .system-info {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-bottom: 1.5rem;
+    }
+
+    .prompt {
+      display: flex;
+      align-items: baseline;
+      gap: 0.5rem;
+      margin-bottom: 0.25rem;
+    }
+
+    .prompt-symbol {
+      color: var(--accent);
+      text-shadow: 0 0 8px var(--accent-glow);
+      flex-shrink: 0;
+    }
+
+    .prompt-text {
+      color: var(--text);
+    }
+
+    .cursor {
+      display: inline-block;
+      width: 0.6em;
+      height: 1.1em;
+      background: var(--accent);
+      margin-left: 2px;
+      animation: blink 1.5s step-end infinite;
+      vertical-align: text-bottom;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 2rem;
+      margin-top: 1rem;
+      font-size: 0.875rem;
+    }
+
+    .nav-links a {
+      color: var(--accent-dim);
+      text-decoration: none;
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+
+    .nav-links a:hover {
+      color: var(--accent);
+      text-shadow: 0 0 8px var(--accent-glow);
+    }
+
+    .nav-links a:focus {
+      outline: 1px dashed var(--accent);
+      outline-offset: 4px;
+    }
+
+    .section-header {
+      color: var(--text-muted);
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      margin-bottom: 1.5rem;
+    }
+
+    .projects {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    .project {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      padding: 1.25rem;
+      position: relative;
+      opacity: 0;
+      animation: fadeUp 0.4s ease forwards;
+    }
+
+    .project:nth-child(1) { animation-delay: 0.1s; }
+    .project:nth-child(2) { animation-delay: 0.2s; }
+    .project:nth-child(3) { animation-delay: 0.3s; }
+    .project:nth-child(4) { animation-delay: 0.4s; }
+    .project:nth-child(5) { animation-delay: 0.5s; }
+
+    .project::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 3px;
+      height: 100%;
+      background: var(--accent-dim);
+      transition: background 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .project:hover::before {
+      background: var(--accent);
+      box-shadow: 0 0 12px var(--accent-glow);
+    }
+
+    .project-title {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--accent);
+      text-shadow: 0 0 8px var(--accent-glow);
+      margin-bottom: 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .project-title::before {
+      content: '>';
+      color: var(--text-muted);
+    }
+
+    .project-description {
+      color: var(--text);
+      font-size: 0.875rem;
+      margin-bottom: 1rem;
+      line-height: 1.65;
+    }
+
+    .project-meta {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.5rem 1rem;
+      font-size: 0.75rem;
+    }
+
+    .tech-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .tech-tag {
+      color: var(--text-muted);
+      padding: 0.15rem 0.4rem;
+      border: 1px solid var(--border);
+      font-size: 0.7rem;
+    }
+
+    .project-links {
+      display: flex;
+      gap: 1rem;
+      margin-left: auto;
+    }
+
+    .project-links a {
+      color: var(--accent-dim);
+      text-decoration: none;
+      font-size: 0.75rem;
+      padding: 0.25rem 0.5rem;
+      border: 1px solid var(--border);
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+
+    .project-links a:hover {
+      color: var(--accent);
+      border-color: var(--accent-dim);
+      text-shadow: 0 0 6px var(--accent-glow);
+    }
+
+    .project-links a:focus {
+      outline: 1px dashed var(--accent);
+      outline-offset: 2px;
+    }
+
+    .project-screenshots {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .screenshot-thumb {
+      width: 160px;
+      height: 120px;
+      border: 1px solid var(--border);
+      overflow: hidden;
+      cursor: pointer;
+      opacity: 0.7;
+      transition: all 0.2s ease;
+    }
+
+    .screenshot-thumb:hover {
+      opacity: 1;
+      border-color: var(--accent-dim);
+    }
+
+    .screenshot-thumb:focus {
+      outline: 1px dashed var(--accent);
+      outline-offset: 2px;
+      opacity: 1;
+    }
+
+    .screenshot-thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      filter: saturate(0.7);
+      transition: filter 0.2s ease;
+    }
+
+    .screenshot-thumb:hover img {
+      filter: saturate(1);
+    }
+
+    /* Lightbox */
+    .lightbox {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.95);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 2000;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.2s ease, visibility 0.2s ease;
+    }
+
+    .lightbox.open {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .lightbox-content {
+      max-width: 90vw;
+      max-height: 90vh;
+      position: relative;
+    }
+
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 85vh;
+      display: block;
+      border: 1px solid var(--border);
+    }
+
+    .lightbox-close {
+      position: absolute;
+      top: -2rem;
+      right: 0;
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      font-family: inherit;
+      font-size: 0.75rem;
+      padding: 0.25rem 0.5rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .lightbox-close:hover {
+      color: var(--accent);
+      border-color: var(--accent-dim);
+    }
+
+    .lightbox-nav {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      font-family: inherit;
+      font-size: 1.5rem;
+      padding: 0.5rem 1rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .lightbox-nav:hover {
+      color: var(--accent);
+      border-color: var(--accent-dim);
+    }
+
+    .lightbox-prev {
+      left: -4rem;
+    }
+
+    .lightbox-next {
+      right: -4rem;
+    }
+
+    .lightbox-counter {
+      position: absolute;
+      bottom: -1.5rem;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 0.7rem;
+      color: var(--text-muted);
+    }
+
+    .empty-state {
+      color: var(--text-muted);
+      padding: 2rem;
+      text-align: center;
+      border: 1px dashed var(--border);
+      font-size: 0.875rem;
+    }
+
+    footer {
+      margin-top: 4rem;
+      padding-top: 1.5rem;
+      border-top: 1px dashed var(--border);
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    .footer-prompt {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .status-ok {
+      color: var(--accent-dim);
+    }
+
+    /* Reduced motion */
+    @media (prefers-reduced-motion: reduce) {
+      .project {
+        animation: none;
+        opacity: 1;
+      }
+      .cursor {
+        animation: none;
+        opacity: 1;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .container {
+        padding: 2rem 1rem 3rem;
+      }
+
+      .ascii-header {
+        font-size: 0.45rem;
+      }
+
+      .project-meta {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .project-links {
+        margin-left: 0;
+        margin-top: 0.5rem;
+      }
+
+      .nav-links {
+        gap: 1.5rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="logo" aria-hidden="true">DREALABS</div>
+      <div class="system-info">DREALABS TERMINAL v0.4 // SESSION ACTIVE</div>
+      <div class="prompt">
+        <span class="prompt-symbol">$</span>
+        <span class="prompt-text">cat portfolio.txt<span class="cursor"></span></span>
+      </div>
+      <nav class="nav-links">
+        <a href="/">[ interactive ]</a>
+        <a href="https://drealabs.substack.com">[ blog ]</a>
+        <a href="https://github.com/andrea-antal">[ github ]</a>
+      </nav>
+    </header>
+
+    <main>
+      <div class="section-header">// PROJECTS</div>
+      <div id="projects" class="projects">
+        <p class="empty-state">Initializing...</p>
+      </div>
+    </main>
+
+    <footer>
+      <div class="footer-prompt">
+        <span class="prompt-symbol">$</span>
+        <span class="status-ok">exit 0</span>
+        <span>// connection closed</span>
+      </div>
+    </footer>
+  </div>
+
+  <!-- Lightbox -->
+  <div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Image viewer">
+    <div class="lightbox-content">
+      <button class="lightbox-close" aria-label="Close">[x] close</button>
+      <button class="lightbox-nav lightbox-prev" aria-label="Previous image">&lt;</button>
+      <img id="lightbox-img" src="" alt="Screenshot">
+      <button class="lightbox-nav lightbox-next" aria-label="Next image">&gt;</button>
+      <div class="lightbox-counter" id="lightbox-counter"></div>
+    </div>
+  </div>
+
+  <script type="module">
+    // Lightbox state
+    let currentImages = [];
+    let currentIndex = 0;
+
+    const lightbox = document.getElementById('lightbox');
+    const lightboxImg = document.getElementById('lightbox-img');
+    const lightboxCounter = document.getElementById('lightbox-counter');
+
+    function openLightbox(images, index) {
+      currentImages = images;
+      currentIndex = index;
+      updateLightbox();
+      lightbox.classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeLightbox() {
+      lightbox.classList.remove('open');
+      document.body.style.overflow = '';
+    }
+
+    function updateLightbox() {
+      lightboxImg.src = currentImages[currentIndex];
+      lightboxCounter.textContent = currentImages.length > 1
+        ? `${currentIndex + 1} / ${currentImages.length}`
+        : '';
+
+      // Hide nav buttons if only one image
+      document.querySelector('.lightbox-prev').style.display = currentImages.length > 1 ? '' : 'none';
+      document.querySelector('.lightbox-next').style.display = currentImages.length > 1 ? '' : 'none';
+    }
+
+    function prevImage() {
+      currentIndex = (currentIndex - 1 + currentImages.length) % currentImages.length;
+      updateLightbox();
+    }
+
+    function nextImage() {
+      currentIndex = (currentIndex + 1) % currentImages.length;
+      updateLightbox();
+    }
+
+    // Event listeners
+    document.querySelector('.lightbox-close').addEventListener('click', closeLightbox);
+    document.querySelector('.lightbox-prev').addEventListener('click', prevImage);
+    document.querySelector('.lightbox-next').addEventListener('click', nextImage);
+
+    lightbox.addEventListener('click', (e) => {
+      if (e.target === lightbox) closeLightbox();
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (!lightbox.classList.contains('open')) return;
+      if (e.key === 'Escape') closeLightbox();
+      if (e.key === 'ArrowLeft') prevImage();
+      if (e.key === 'ArrowRight') nextImage();
+    });
+
+    async function loadProjects() {
+      const container = document.getElementById('projects');
+
+      try {
+        const response = await fetch('data/projects.json');
+        const data = await response.json();
+
+        const allProjects = [];
+        for (const level of Object.values(data.levels)) {
+          if (level.projects) {
+            allProjects.push(...level.projects);
+          }
+        }
+
+        const realProjects = allProjects.filter(p =>
+          !p.description.startsWith('Placeholder') &&
+          !['helm', 'sonar', 'guestbook'].includes(p.id) &&
+          p.tech.length > 0
+        );
+
+        if (realProjects.length === 0) {
+          container.innerHTML = '<p class="empty-state">No projects found. Check back soon.</p>';
+          return;
+        }
+
+        container.innerHTML = realProjects.map(project => {
+          const links = [];
+          if (project.links.live) {
+            links.push(`<a href="${project.links.live}" target="_blank" rel="noopener">live</a>`);
+          }
+          if (project.links.github) {
+            links.push(`<a href="${project.links.github}" target="_blank" rel="noopener">src</a>`);
+          }
+
+          const screenshots = project.screenshots && project.screenshots.length > 0
+            ? `<div class="project-screenshots">
+                ${project.screenshots.map((src, i) => `
+                  <button class="screenshot-thumb"
+                          data-images='${JSON.stringify(project.screenshots)}'
+                          data-index="${i}"
+                          aria-label="View screenshot ${i + 1}">
+                    <img src="${src}" alt="${project.title} screenshot ${i + 1}" loading="lazy">
+                  </button>
+                `).join('')}
+              </div>`
+            : '';
+
+          return `
+            <article class="project">
+              <h2 class="project-title">${project.title}</h2>
+              <p class="project-description">${project.description}</p>
+              <div class="project-meta">
+                <div class="tech-list">
+                  ${project.tech.map(t => `<span class="tech-tag">${t}</span>`).join('')}
+                </div>
+                ${links.length > 0 ? `<div class="project-links">${links.join('')}</div>` : ''}
+              </div>
+              ${screenshots}
+            </article>
+          `;
+        }).join('');
+
+        // Attach click handlers to thumbnails
+        document.querySelectorAll('.screenshot-thumb').forEach(thumb => {
+          thumb.addEventListener('click', () => {
+            const images = JSON.parse(thumb.dataset.images);
+            const index = parseInt(thumb.dataset.index, 10);
+            openLightbox(images, index);
+          });
+        });
+
+      } catch (error) {
+        console.error('Failed to load projects:', error);
+        container.innerHTML = '<p class="empty-state">Error: Failed to load projects.</p>';
+      }
+    }
+
+    loadProjects();
+  </script>
+</body>
+</html>
