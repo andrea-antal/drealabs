@@ -10,6 +10,10 @@
     {
       "source": "/portfolio",
       "destination": "/portfolio.html"
+    },
+    {
+      "source": "/adventure",
+      "destination": "/adventure.html"
     }
   ]
 }

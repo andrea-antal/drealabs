@@ -1,0 +1,940 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Adventure - Drealabs</title>
+  <link rel="icon" type="image/png" href="favicon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #111111;
+      --bg-card: #161616;
+      --accent: #ffcc00;
+      --accent-dim: #cc9900;
+      --accent-glow: rgba(255, 204, 0, 0.15);
+      --text: #e8e4e0;
+      --text-muted: #8a8680;
+      --border: #2a2826;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    @keyframes blink {
+      0%, 50% { opacity: 1; }
+      51%, 100% { opacity: 0; }
+    }
+
+    html {
+      font-size: 16px;
+    }
+
+    body {
+      font-family: 'JetBrains Mono', monospace;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* CRT scanline effect */
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(0, 0, 0, 0.15) 2px,
+        rgba(0, 0, 0, 0.15) 4px
+      );
+      pointer-events: none;
+      z-index: 1000;
+    }
+
+    .game-container {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      width: 100%;
+    }
+
+    .game-header {
+      border-bottom: 1px dashed var(--border);
+      padding-bottom: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .ascii-title {
+      color: var(--accent);
+      font-size: 1rem;
+      line-height: 1.2;
+      white-space: pre;
+      text-shadow: 0 0 10px var(--accent-glow), 0 0 20px var(--accent-glow);
+      margin-bottom: 0.5rem;
+    }
+
+    .game-subtitle {
+      color: var(--text-muted);
+      font-size: 0.75rem;
+      margin-top: 0.25rem;
+    }
+
+    .ascii-room {
+      color: var(--accent-dim);
+      font-size: 1rem;
+      line-height: 1.25;
+      white-space: pre;
+      margin: 0.75rem 0;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 2rem;
+      margin-top: 0.75rem;
+      font-size: 0.75rem;
+    }
+
+    .nav-links a {
+      color: var(--accent-dim);
+      text-decoration: none;
+      transition: all 0.2s ease;
+    }
+
+    .nav-links a:hover {
+      color: var(--accent);
+      text-shadow: 0 0 8px var(--accent-glow);
+    }
+
+    .output-area {
+      flex: 1;
+      overflow-y: auto;
+      padding: 0.5rem 0;
+      min-height: 300px;
+    }
+
+    .output-line {
+      margin-bottom: 0.75rem;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+    }
+
+    .output-line.room-name {
+      color: var(--accent);
+      font-weight: 600;
+      text-shadow: 0 0 8px var(--accent-glow);
+      margin-top: 1rem;
+    }
+
+    .output-line.room-name:first-child {
+      margin-top: 0;
+    }
+
+    .output-line.objects {
+      color: var(--accent-dim);
+    }
+
+    .output-line.exits {
+      color: var(--text-muted);
+      font-size: 0.875rem;
+    }
+
+    .output-line.command {
+      color: var(--text-muted);
+    }
+
+    .output-line.command::before {
+      content: '> ';
+      color: var(--accent);
+    }
+
+    .output-line.error {
+      color: #cc6666;
+    }
+
+    .output-line.flavor {
+      color: var(--text-muted);
+      font-style: italic;
+    }
+
+    .project-reveal {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      padding: 1rem;
+      margin: 0.5rem 0;
+      border-left: 3px solid var(--accent-dim);
+    }
+
+    .project-reveal .title {
+      color: var(--accent);
+      font-weight: 600;
+      text-shadow: 0 0 8px var(--accent-glow);
+      margin-bottom: 0.5rem;
+    }
+
+    .project-reveal .description {
+      font-size: 0.875rem;
+      margin-bottom: 0.75rem;
+      line-height: 1.6;
+    }
+
+    .project-reveal .tech {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .project-reveal .tech-tag {
+      color: var(--text-muted);
+      padding: 0.15rem 0.4rem;
+      border: 1px solid var(--border);
+      font-size: 0.7rem;
+    }
+
+    .project-reveal .links {
+      display: flex;
+      gap: 1rem;
+      font-size: 0.75rem;
+    }
+
+    .project-reveal .links a {
+      color: var(--accent-dim);
+      text-decoration: none;
+      padding: 0.25rem 0.5rem;
+      border: 1px solid var(--border);
+      transition: all 0.2s ease;
+    }
+
+    .project-reveal .links a:hover {
+      color: var(--accent);
+      border-color: var(--accent-dim);
+      text-shadow: 0 0 6px var(--accent-glow);
+    }
+
+    .input-area {
+      border-top: 1px dashed var(--border);
+      padding-top: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .prompt-symbol {
+      color: var(--accent);
+      text-shadow: 0 0 8px var(--accent-glow);
+      flex-shrink: 0;
+    }
+
+    #game-input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      color: var(--text);
+      font-family: inherit;
+      font-size: 1rem;
+      outline: none;
+      caret-color: var(--accent);
+    }
+
+    #game-input::placeholder {
+      color: var(--text-muted);
+      opacity: 0.5;
+    }
+
+    .cursor {
+      display: inline-block;
+      width: 0.6em;
+      height: 1.1em;
+      background: var(--accent);
+      animation: blink 1.5s step-end infinite;
+      vertical-align: text-bottom;
+    }
+
+    /* Reduced motion */
+    @media (prefers-reduced-motion: reduce) {
+      .cursor {
+        animation: none;
+        opacity: 1;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .game-container {
+        padding: 1rem;
+      }
+
+      .nav-links {
+        gap: 1rem;
+        flex-wrap: wrap;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="game-container">
+    <header class="game-header">
+      <pre class="ascii-title" aria-label="The Forgotten Archive">
+ _____ _            _____                    _   _
+|_   _| |__   ___  |  ___|__  _ __ __ _  ___ | |_| |_ ___ _ __
+  | | | '_ \ / _ \ | |_ / _ \| '__/ _` |/ _ \| __| __/ _ \ '_ \
+  | | | | | |  __/ |  _| (_) | | | (_| | (_) | |_| ||  __/ | | |
+  |_| |_| |_|\___| |_|  \___/|_|  \__, |\___/ \__|\__\___|_| |_|
+     _             _     _        |___/
+    / \   _ __ ___| |__ (_)_   _____
+   / _ \ | '__/ __| '_ \| \ \ / / _ \
+  / ___ \| | | (__| | | | |\ V /  __/
+ /_/   \_\_|  \___|_| |_|_| \_/ \___|
+      </pre>
+      <div class="game-subtitle">DREALABS ADVENTURE v0.5 // A text adventure</div>
+      <nav class="nav-links">
+        <a href="/">[ interactive ]</a>
+        <a href="/portfolio">[ portfolio ]</a>
+        <a href="https://drealabs.substack.com">[ blog ]</a>
+      </nav>
+    </header>
+
+    <div class="output-area" id="output"></div>
+
+    <div class="input-area">
+      <span class="prompt-symbol">&gt;</span>
+      <input type="text" id="game-input" placeholder="enter command..." autofocus autocomplete="off" spellcheck="false">
+    </div>
+  </div>
+
+  <script>
+    // Game data
+    const dungeon = {
+      rooms: {
+        'grand-atrium': {
+          name: 'The Grand Atrium',
+          ascii: `
+                         [NORTH]
+                            |
+            .  *  .    _____|_____    .  *  .
+         *    .       |         |       .    *
+              .  *    |  ~   ~  |    *  .
+    [WEST]------------|   (O)   |------------[EAST]
+              *  .    |  ~   ~  |    .  *
+         .    *       |_________|       *    .
+            *  .  *        |        *  .  *
+                           |
+                        [SOUTH]`,
+          description: 'You stand in a vast circular chamber carved from ancient stone. Phosphorescent moss clings to towering pillars that disappear into darkness above. At the center, a shimmering portal swirls with otherworldly light, its surface rippling like liquid mercury.',
+          exits: { north: 'sanctum', south: 'vault', east: 'constructs', west: 'whispers' },
+          objects: {
+            'portal': {
+              name: 'a shimmering portal',
+              keywords: ['portal', 'shimmering portal', 'gateway'],
+              examine: 'The portal swirls with possibility, its surface reflecting glimpses of other realms. Through the rippling light, you glimpse different versions of this archive...',
+              links: {
+                'Interactive Version': '/',
+                'Terminal Portfolio': '/portfolio'
+              }
+            },
+            'pillars': {
+              name: 'ancient pillars',
+              keywords: ['pillars', 'pillar', 'columns', 'column'],
+              examine: 'The pillars are covered in worn inscriptions. You can barely make out fragments: "...knowledge preserved within..." and "...seek the orbs of wisdom..."'
+            },
+            'moss': {
+              name: 'phosphorescent moss',
+              keywords: ['moss', 'phosphorescent moss', 'glow', 'light'],
+              examine: 'The moss emits a soft, ethereal glow. It seems to pulse gently, as if breathing.'
+            }
+          }
+        },
+        'whispers': {
+          name: 'The Hall of Whispers',
+          ascii: `
+    _________________________________________
+   |                                         |
+   |   (o)     ( )     ( )     ( )     ( )   |----[EAST]
+   |   |||     |||     |||     |||     |||   |
+   |  _____   _____   _____   _____   _____  |
+   |_________________________________________|
+       ~         ~         ~         ~`,
+          description: 'Echoes of forgotten conversations drift through this narrow corridor. The walls are lined with alcoves, each containing a softly glowing crystal orb on a stone pedestal. An amber orb pulses warmly in the nearest alcove.',
+          exits: { east: 'grand-atrium' },
+          objects: {
+            'amber orb': {
+              name: 'an amber orb',
+              keywords: ['amber orb', 'amber', 'orb', 'crystal', 'warm orb'],
+              examine: 'You reach toward the amber orb. As your fingers brush its surface, warmth floods through you, and voices emerge - not whispers of the dead, but joyful sounds of childhood...',
+              project: {
+                title: "Nathan's Words",
+                description: "A soundboard of cute words my toddler says. Got the idea from a Lenny Rachitsky post. I recorded the audio on my phone, split up each word into separate mp3 files using Descript, then used Claude Code to organize the files and create the site.",
+                tech: ['TypeScript', 'JavaScript', 'CSS'],
+                links: {
+                  github: 'https://github.com/andrea-antal/baby-words'
+                }
+              }
+            },
+            'alcoves': {
+              name: 'stone alcoves',
+              keywords: ['alcoves', 'alcove', 'pedestals', 'pedestal'],
+              examine: 'Each alcove is precisely carved, designed to hold and protect a single orb. The craftsmanship is exquisite.'
+            }
+          }
+        },
+        'constructs': {
+          name: 'The Chamber of Constructs',
+          ascii: `
+              ___________
+             |    (O)    |
+             |   / | \\   |
+             |  *  *  *  |
+    [WEST]---|  |=====|  |
+             | _|_____|_ |
+             ||  ^ ^ ^  ||
+             |___________|`,
+          description: 'Arcane machinery fills this room - gears of unknown metals, tubes containing glowing fluids, and crystalline matrices that hum with energy. A violet orb floats above a central apparatus, crackling with eldritch power.',
+          exits: { west: 'grand-atrium' },
+          objects: {
+            'violet orb': {
+              name: 'a violet orb',
+              keywords: ['violet orb', 'violet', 'orb', 'purple orb', 'purple', 'floating orb'],
+              examine: 'The violet orb crackles with artificial intelligence - not magic, but something close. When you touch it, your mind fills with visions of vast networks of knowledge being searched, synthesized, understood...',
+              project: {
+                title: 'Claude Powered Research Agent',
+                description: "I wanted to use the Claude Agent SDK to build an agent, so I built one to do in depth research. The agent has a few preset topic domains, which each contain a tailored rubric to determine authenticity/veracity/authoritativeness/bias/trust. The agent outputs the research in synthesized markdown files. After research sessions are complete, I use Claude to have a discussion to pull data from the files. It's been a boon for writing and understanding new topics.",
+                tech: ['Python'],
+                links: {
+                  github: 'https://github.com/andrea-antal/project-researcher'
+                }
+              }
+            },
+            'machinery': {
+              name: 'arcane machinery',
+              keywords: ['machinery', 'machine', 'machines', 'gears', 'apparatus', 'tubes'],
+              examine: 'The machinery seems to run on principles beyond normal understanding. Gears turn without touching, fluids flow upward, and the crystalline matrices pulse in complex patterns.'
+            }
+          }
+        },
+        'sanctum': {
+          name: 'The Sanctum of Echoes',
+          ascii: `
+               _____
+            .-'     '-.
+          .'   ~ ~ ~   '.
+         /    ~(O)~      \\
+        |   ~   |   ~     |
+        |      /_\\        |
+         \\    |___|      /
+          '.___________.'
+                 |
+              [SOUTH]`,
+          description: 'A domed chamber where sounds linger impossibly long. Your footsteps create symphonies that take long moments to fade. An emerald orb rests on an altar at the chamber\'s heart, its surface swirling with what looks like recipes and ingredient lists.',
+          exits: { south: 'grand-atrium' },
+          objects: {
+            'emerald orb': {
+              name: 'an emerald orb',
+              keywords: ['emerald orb', 'emerald', 'orb', 'green orb', 'green'],
+              examine: 'The emerald orb shows visions of kitchens and meals, of ingredients combining in perfect harmony. It hums with the satisfaction of a well-planned dinner...',
+              project: {
+                title: 'AI Meal Planner',
+                description: "This was a passion project from the start and what got me deep into Claude Code. I didn't just want to build Yet Another Meal Planner, but try and solve more than the one problem I had with planning and cooking meals. I've loaded it with a ton of natural language/voice input features to make it work for my own use case (most commonly, standing with the fridge door open and pondering out loud what the heck to make with the stuff in there). It's still a major undertaking in progress and the direction is still not yet determined - I'll come back and update when I go through the next major milestone. For now, it's in a closed beta, but I've changed to building in public on github with an MIT license.",
+                tech: ['TypeScript', 'Python', 'Claude'],
+                links: {
+                  github: 'https://github.com/andrea-antal/mealplanner'
+                }
+              }
+            },
+            'altar': {
+              name: 'a stone altar',
+              keywords: ['altar', 'stone altar', 'pedestal'],
+              examine: 'The altar is carved from a single piece of green marble, veined with gold. It was clearly made to hold something precious.'
+            },
+            'dome': {
+              name: 'the domed ceiling',
+              keywords: ['dome', 'ceiling', 'roof'],
+              examine: 'The dome is covered in acoustic tiles arranged in a fractal pattern. Each tile seems to capture and redirect sound in impossible ways.'
+            }
+          }
+        },
+        'vault': {
+          name: 'The Deep Vault',
+          ascii: `
+              [NORTH]
+                 |
+        _________|_________
+       |                   |
+       |  [ ]   (.)   [ ]  |
+       |  [ ]         [ ]  |
+       |  [ ]         [ ]  |
+       |___________________|
+            \\         /
+             \\       /
+              \\_____/`,
+          description: 'You descend into the deepest chamber of the archive. The air is thick with potential. Empty pedestals line the walls, waiting for future treasures. In the center, a single orb rests - but it is dim, dormant, holding secrets not yet ready to be revealed.',
+          exits: { north: 'grand-atrium' },
+          objects: {
+            'dormant orb': {
+              name: 'a dormant orb',
+              keywords: ['dormant orb', 'dormant', 'orb', 'dim orb', 'dim', 'dark orb'],
+              examine: 'The orb is barely visible in the darkness, its surface showing only faint flickers of light. Whatever knowledge it contains has not yet fully formed. Perhaps... in time...',
+              flavor: 'Future projects await. The archive continues to grow.'
+            },
+            'pedestals': {
+              name: 'empty pedestals',
+              keywords: ['pedestals', 'pedestal', 'empty pedestals'],
+              examine: 'Rows of empty pedestals stretch into the darkness, each awaiting its own orb. The archive is far from complete.'
+            },
+            'darkness': {
+              name: 'the surrounding darkness',
+              keywords: ['darkness', 'dark', 'shadows'],
+              examine: 'The darkness here feels alive, pregnant with possibility. It\'s not threatening - just... waiting.'
+            }
+          }
+        }
+      },
+      startRoom: 'grand-atrium'
+    };
+
+    // Easter eggs
+    const easterEggs = {
+      'xyzzy': "A hollow voice says 'Fool.'",
+      'plugh': "A hollow voice says 'Plugh yourself.'",
+      'cast spell': "You wave your hands dramatically. Nothing happens, but you feel slightly more magical.",
+      'sing': "Your voice echoes through the chamber. Somewhere, a bat is very annoyed.",
+      'dance': "You perform an impromptu jig. The ancient stones seem unimpressed.",
+      'scream': "AAAAAAH! ...feel better?",
+      'hello': "The dungeon doesn't respond. It's not being rude, it's just a dungeon.",
+      'wait': "Time passes...",
+      'jump': "You jump on the spot. Nothing remarkable happens.",
+      'pray': "You offer a silent prayer. The archive acknowledges your devotion with a faint shimmer.",
+      'think': "You ponder the mysteries of existence. The orbs pulse sympathetically.",
+      'sleep': "This hardly seems like the time for a nap.",
+      'die': "That would be counterproductive.",
+      'quit': "You cannot quit the archive. The archive has already quit you."
+    };
+
+    // Direction mappings
+    const directions = {
+      'n': 'north',
+      's': 'south',
+      'e': 'east',
+      'w': 'west',
+      'north': 'north',
+      'south': 'south',
+      'east': 'east',
+      'west': 'west'
+    };
+
+    // Game state
+    let currentRoom = dungeon.startRoom;
+    let commandHistory = [];
+    let historyIndex = -1;
+
+    // DOM elements
+    const output = document.getElementById('output');
+    const input = document.getElementById('game-input');
+
+    // Output functions
+    function print(text, className = '') {
+      const line = document.createElement('div');
+      line.className = 'output-line' + (className ? ' ' + className : '');
+      line.textContent = text;
+      output.appendChild(line);
+      scrollToBottom();
+    }
+
+    function printHTML(html) {
+      const div = document.createElement('div');
+      div.innerHTML = html;
+      output.appendChild(div);
+      scrollToBottom();
+    }
+
+    function scrollToBottom() {
+      output.scrollTop = output.scrollHeight;
+    }
+
+    // Print ASCII art
+    function printAscii(ascii) {
+      const pre = document.createElement('pre');
+      pre.className = 'ascii-room';
+      pre.textContent = ascii;
+      output.appendChild(pre);
+      scrollToBottom();
+    }
+
+    // Room description
+    function describeRoom(room) {
+      const r = dungeon.rooms[room];
+      print(r.name, 'room-name');
+
+      // Show ASCII art if available
+      if (r.ascii) {
+        printAscii(r.ascii);
+      }
+
+      print(r.description);
+
+      // List objects
+      const objectNames = Object.values(r.objects).map(o => o.name);
+      if (objectNames.length > 0) {
+        print('You see: ' + objectNames.join(', ') + '.', 'objects');
+      }
+
+      // List exits
+      const exitDirs = Object.keys(r.exits);
+      if (exitDirs.length > 0) {
+        print('Exits: ' + exitDirs.join(', '), 'exits');
+      }
+    }
+
+    // Find object by keyword
+    function findObject(keyword) {
+      const room = dungeon.rooms[currentRoom];
+      keyword = keyword.toLowerCase();
+
+      for (const [id, obj] of Object.entries(room.objects)) {
+        if (obj.keywords && obj.keywords.some(k => k.toLowerCase() === keyword)) {
+          return obj;
+        }
+        if (id.toLowerCase() === keyword) {
+          return obj;
+        }
+      }
+      return null;
+    }
+
+    // Display project info
+    function displayProject(obj) {
+      print(obj.examine, 'flavor');
+
+      if (obj.project) {
+        const p = obj.project;
+        let html = '<div class="project-reveal">';
+        html += `<div class="title">${p.title}</div>`;
+        html += `<div class="description">${p.description}</div>`;
+
+        if (p.tech && p.tech.length > 0) {
+          html += '<div class="tech">';
+          p.tech.forEach(t => {
+            html += `<span class="tech-tag">${t}</span>`;
+          });
+          html += '</div>';
+        }
+
+        if (p.links) {
+          html += '<div class="links">';
+          if (p.links.live) {
+            html += `<a href="${p.links.live}" target="_blank" rel="noopener">live</a>`;
+          }
+          if (p.links.github) {
+            html += `<a href="${p.links.github}" target="_blank" rel="noopener">github</a>`;
+          }
+          html += '</div>';
+        }
+
+        html += '</div>';
+        printHTML(html);
+      } else if (obj.links) {
+        // Portal links
+        let html = '<div class="project-reveal">';
+        html += '<div class="title">Portal Destinations</div>';
+        html += '<div class="links">';
+        for (const [name, url] of Object.entries(obj.links)) {
+          html += `<a href="${url}">${name}</a>`;
+        }
+        html += '</div>';
+        html += '</div>';
+        printHTML(html);
+      } else if (obj.flavor) {
+        print(obj.flavor, 'flavor');
+      }
+    }
+
+    // Command parser
+    function parseCommand(input) {
+      const words = input.toLowerCase().trim().split(/\s+/);
+      if (words.length === 0 || words[0] === '') return null;
+
+      const verb = words[0];
+      const noun = words.slice(1).join(' ');
+
+      // Direction shortcuts
+      if (directions[verb] && words.length === 1) {
+        return { action: 'go', target: directions[verb] };
+      }
+
+      // Command aliases
+      const aliases = {
+        'x': 'examine',
+        'l': 'look',
+        'i': 'inventory',
+        'inv': 'inventory',
+        '?': 'help',
+        'go': 'go',
+        'move': 'go',
+        'walk': 'go',
+        'examine': 'examine',
+        'look': 'look',
+        'inspect': 'examine',
+        'study': 'examine',
+        'read': 'examine',
+        'help': 'help',
+        'inventory': 'inventory',
+        'take': 'take',
+        'get': 'take',
+        'grab': 'take',
+        'kick': 'kick',
+        'enter': 'enter',
+        'use': 'use',
+        'touch': 'examine',
+        'check': 'examine',
+        'clear': 'clear'
+      };
+
+      return {
+        action: aliases[verb] || verb,
+        target: noun || (directions[verb] ? directions[verb] : '')
+      };
+    }
+
+    // Process command
+    function processCommand(cmd) {
+      if (!cmd) return;
+
+      const input = cmd.trim();
+      if (input === '') return;
+
+      print(input, 'command');
+
+      // Check easter eggs first
+      if (easterEggs[input.toLowerCase()]) {
+        print(easterEggs[input.toLowerCase()], 'flavor');
+        return;
+      }
+
+      const parsed = parseCommand(input);
+      if (!parsed) return;
+
+      const { action, target } = parsed;
+      const room = dungeon.rooms[currentRoom];
+
+      switch (action) {
+        case 'go':
+          const dir = directions[target];
+          if (!dir) {
+            print("Go where? Try: north, south, east, west (or n, s, e, w)", 'error');
+            return;
+          }
+          if (room.exits[dir]) {
+            currentRoom = room.exits[dir];
+            print('');
+            describeRoom(currentRoom);
+          } else {
+            print("You can't go that way.", 'error');
+          }
+          break;
+
+        case 'look':
+          if (target) {
+            // Look at specific object
+            const obj = findObject(target);
+            if (obj) {
+              displayProject(obj);
+            } else {
+              print("You don't see that here.", 'error');
+            }
+          } else {
+            describeRoom(currentRoom);
+          }
+          break;
+
+        case 'examine':
+          if (!target) {
+            print("Examine what?", 'error');
+            return;
+          }
+          const examineObj = findObject(target);
+          if (examineObj) {
+            displayProject(examineObj);
+          } else {
+            print("You don't see that here.", 'error');
+          }
+          break;
+
+        case 'take':
+          if (!target) {
+            print("Take what?", 'error');
+            return;
+          }
+          const takeObj = findObject(target);
+          if (takeObj) {
+            print("The artifact is bound to this place. Its knowledge can be accessed, but not removed.", 'flavor');
+          } else {
+            print("You don't see that here.", 'error');
+          }
+          break;
+
+        case 'kick':
+          if (!target) {
+            print("Kick what? The air? That seems pointless.", 'flavor');
+            return;
+          }
+          const kickObj = findObject(target);
+          if (kickObj) {
+            print("You consider kicking " + kickObj.name + ", but decide that would be disrespectful to ancient artifacts.", 'flavor');
+          } else {
+            print("You kick at nothing in particular. Very cathartic.", 'flavor');
+          }
+          break;
+
+        case 'enter':
+          if (target.includes('portal') && currentRoom === 'grand-atrium') {
+            const portal = room.objects['portal'];
+            displayProject(portal);
+          } else {
+            print("You can't enter that.", 'error');
+          }
+          break;
+
+        case 'use':
+          if (!target) {
+            print("Use what?", 'error');
+            return;
+          }
+          const useObj = findObject(target);
+          if (useObj) {
+            print("Try examining it instead.", 'flavor');
+          } else {
+            print("You don't see that here.", 'error');
+          }
+          break;
+
+        case 'inventory':
+          print("You carry nothing but curiosity and a desire to learn.", 'flavor');
+          break;
+
+        case 'help':
+          print('');
+          print('AVAILABLE COMMANDS:', 'room-name');
+          print('  look (l)         - Describe your surroundings');
+          print('  examine <obj> (x, check) - Inspect an object closely');
+          print('  go <dir>         - Move in a direction');
+          print('  n/s/e/w          - Shortcut for movement');
+          print('  inventory (i)    - Check your belongings');
+          print('  help (?)         - Show this message');
+          print('  clear            - Clear the screen');
+          print('');
+          print('Objects can be examined to reveal secrets...', 'flavor');
+          break;
+
+        case 'clear':
+          output.innerHTML = '';
+          describeRoom(currentRoom);
+          break;
+
+        default:
+          print("I don't understand that command. Type 'help' for a list of commands.", 'error');
+      }
+    }
+
+    // Input handling
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        const cmd = input.value;
+        if (cmd.trim()) {
+          commandHistory.unshift(cmd);
+          historyIndex = -1;
+        }
+        processCommand(cmd);
+        input.value = '';
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        if (historyIndex < commandHistory.length - 1) {
+          historyIndex++;
+          input.value = commandHistory[historyIndex];
+        }
+      } else if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        if (historyIndex > 0) {
+          historyIndex--;
+          input.value = commandHistory[historyIndex];
+        } else if (historyIndex === 0) {
+          historyIndex = -1;
+          input.value = '';
+        }
+      }
+    });
+
+    // Two-stage intro: opening text, then room
+    let introComplete = false;
+    input.disabled = true;
+    input.placeholder = '[press any key to continue]';
+
+    // Stage 1: Show opening
+    printAscii(`
+    +------------------------------------------------+
+    |                                                |
+    |    You awaken in darkness. A faint glow        |
+    |    emanates from somewhere ahead. Ancient      |
+    |    knowledge awaits those who seek it...       |
+    |                                                |
+    +------------------------------------------------+`);
+
+    function completeIntro() {
+      if (introComplete) return;
+      introComplete = true;
+
+      // Stage 2: Show welcome and room
+      print('');
+      print('Welcome to the Forgotten Archive.', 'flavor');
+      print('Type "help" for a list of commands.', 'flavor');
+      print('');
+      describeRoom(currentRoom);
+
+      // Enable input
+      input.disabled = false;
+      input.placeholder = 'enter command...';
+      input.focus();
+
+      // Clean up listeners
+      document.removeEventListener('keydown', handleIntroKey);
+      document.removeEventListener('click', handleIntroClick);
+    }
+
+    function handleIntroKey(e) {
+      if (!introComplete && e.key !== 'Tab') {
+        e.preventDefault();
+        completeIntro();
+      }
+    }
+
+    function handleIntroClick() {
+      if (!introComplete) {
+        completeIntro();
+      }
+    }
+
+    document.addEventListener('keydown', handleIntroKey);
+    document.addEventListener('click', handleIntroClick);
+
+    // Focus input on click anywhere (after intro)
+    document.addEventListener('click', () => {
+      if (introComplete) {
+        input.focus();
+      }
+    });
+  </script>
+</body>
+</html>
