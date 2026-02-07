@@ -20,6 +20,17 @@
       ],
       "projects": [
         {
+          "id": "drealabs-interactive",
+          "title": "Drealabs.com",
+          "description": "My portfolio site, built as an interactive point-and-click adventure game. Visitors explore a submarine lab, click on objects to discover projects, and meet NPCs. Features sprite animation, raycasting hotspots, multi-room navigation, and a hidden text adventure.",
+          "tech": ["Three.js", "JavaScript", "CSS"],
+          "links": {
+            "live": "https://drealabs.com",
+            "github": "https://github.com/andrea-antal/drealabs"
+          },
+          "screenshots": []
+        },
+        {
           "id": "tank-1",
           "title": "Nathan's Words",
           "description": "A soundboard of cute words my toddler says. Got the idea from a Lenny Rachitsky post. I recorded the audio on my phone, split up each word into separate mp3 files using Descript, then used Claude Code to organize the files and create the site.",

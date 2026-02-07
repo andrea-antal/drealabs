@@ -42,7 +42,7 @@ export function initHotspots(projects, clickCallback) {
   // In debug mode, show all hotspots
   const activeProjects = DEBUG_HOTSPOTS
     ? projects
-    : projects.filter(p => !p.description.startsWith('Placeholder description'));
+    : projects.filter(p => !p.description.startsWith('Placeholder description') && p.hotspot);
 
   // Create invisible meshes for each hotspot
   activeProjects.forEach((project) => {
