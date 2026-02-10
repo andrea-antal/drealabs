@@ -1,4 +1,4 @@
-import { fetchGuestbookEntries, submitGuestbookEntry, formatRelativeTime, canSubmit, getCooldownRemaining } from './supabase.js';
+import { fetchGuestbookEntries, submitGuestbookEntry, formatRelativeTime, canSubmit, getCooldownRemaining } from './guestbook.js';
 
 let panelElement;
 let backdropElement;
@@ -607,11 +607,16 @@ async function handleGuestbookSubmit(e) {
   const result = await submitGuestbookEntry(name, location, message);
 
   if (result.success) {
-    // Clear form and reload entries
+    // Clear form and show pending message
     form.reset();
     const charCount = form.querySelector('.guestbook-char-count');
     if (charCount) charCount.textContent = '0/500';
-    await loadGuestbookEntries();
+    errorEl.style.color = 'var(--glow-cyan, #0ff)';
+    errorEl.textContent = 'Signed! Your entry will appear shortly.';
+    setTimeout(() => {
+      errorEl.textContent = '';
+      errorEl.style.color = '';
+    }, 5000);
   } else {
     errorEl.textContent = result.error;
   }

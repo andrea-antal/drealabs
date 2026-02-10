@@ -1,15 +1,4 @@
-// Supabase client for guestbook
-// Replace these with your actual Supabase credentials
-const SUPABASE_URL = 'https://dcfmauexwnlkexbjruip.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRjZm1hdWV4d25sa2V4YmpydWlwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAyMTQ4NjcsImV4cCI6MjA4NTc5MDg2N30.emZoefhHa8L5wVbZne2iq-XZwIhDHHFhpv33t6qQmf4';
-
-// Simple Supabase client using fetch (no SDK dependency)
-const supabaseHeaders = {
-  'apikey': SUPABASE_ANON_KEY,
-  'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
-  'Content-Type': 'application/json',
-  'Prefer': 'return=representation'
-};
+// Guestbook client (reads from static JSON, writes via serverless function)
 
 // Cooldown tracking
 const COOLDOWN_MS = 60000; // 60 seconds between submissions
@@ -32,15 +21,10 @@ function recordSubmission() {
   localStorage.setItem(COOLDOWN_KEY, Date.now().toString());
 }
 
-// Fetch visible guestbook entries, newest first
+// Fetch visible guestbook entries, newest first (static JSON served from CDN)
 export async function fetchGuestbookEntries() {
-  const url = `${SUPABASE_URL}/rest/v1/guestbook_entries?is_visible=eq.true&order=created_at.desc&limit=50`;
-
   try {
-    const response = await fetch(url, {
-      method: 'GET',
-      headers: supabaseHeaders
-    });
+    const response = await fetch('/data/guestbook.json?t=' + Date.now());
 
     if (!response.ok) {
       throw new Error(`Failed to fetch entries: ${response.status}`);
@@ -53,7 +37,7 @@ export async function fetchGuestbookEntries() {
   }
 }
 
-// Submit a new guestbook entry
+// Submit a new guestbook entry via serverless function
 export async function submitGuestbookEntry(name, location, message) {
   // Validate inputs
   if (!name || name.trim().length === 0) {
@@ -84,12 +68,10 @@ export async function submitGuestbookEntry(name, location, message) {
     return { success: false, error: `Please wait ${remaining} seconds before posting again` };
   }
 
-  const url = `${SUPABASE_URL}/rest/v1/guestbook_entries`;
-
   try {
-    const response = await fetch(url, {
+    const response = await fetch('/api/guestbook', {
       method: 'POST',
-      headers: supabaseHeaders,
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         name: name.trim(),
         location: location ? location.trim() : null,
@@ -97,15 +79,14 @@ export async function submitGuestbookEntry(name, location, message) {
       })
     });
 
+    const result = await response.json();
+
     if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`Failed to submit entry: ${response.status} - ${errorText}`);
+      return { success: false, error: result.error || 'Failed to submit entry' };
     }
 
-    const result = await response.json();
     recordSubmission();
-
-    return { success: true, entry: result[0] };
+    return { success: true, entry: result.entry };
   } catch (error) {
     console.error('Error submitting guestbook entry:', error);
     return { success: false, error: 'Failed to submit entry. Please try again.' };
