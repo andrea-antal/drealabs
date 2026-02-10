@@ -257,6 +257,14 @@
       opacity: 0.5;
     }
 
+    .scroll-hint {
+      color: var(--text-muted);
+      font-size: 0.7rem;
+      opacity: 0.4;
+      flex-shrink: 0;
+      letter-spacing: 0.05em;
+    }
+
     .cursor {
       display: inline-block;
       width: 0.6em;
@@ -314,6 +322,7 @@
     <div class="input-area">
       <span class="prompt-symbol">&gt;</span>
       <input type="text" id="game-input" placeholder="enter command..." autofocus autocomplete="off" spellcheck="false">
+      <span class="scroll-hint">scroll</span>
     </div>
   </div>
 
@@ -538,8 +547,7 @@
 
     // Game state
     let currentRoom = dungeon.startRoom;
-    let commandHistory = [];
-    let historyIndex = -1;
+    const SCROLL_STEP = 80; // pixels per arrow key press
 
     // DOM elements
     const output = document.getElementById('output');
@@ -852,28 +860,20 @@
     // Input handling
     input.addEventListener('keydown', (e) => {
       if (e.key === 'Enter') {
-        const cmd = input.value;
-        if (cmd.trim()) {
-          commandHistory.unshift(cmd);
-          historyIndex = -1;
-        }
-        processCommand(cmd);
+        processCommand(input.value);
         input.value = '';
       } else if (e.key === 'ArrowUp') {
         e.preventDefault();
-        if (historyIndex < commandHistory.length - 1) {
-          historyIndex++;
-          input.value = commandHistory[historyIndex];
-        }
+        output.scrollTop -= SCROLL_STEP;
       } else if (e.key === 'ArrowDown') {
         e.preventDefault();
-        if (historyIndex > 0) {
-          historyIndex--;
-          input.value = commandHistory[historyIndex];
-        } else if (historyIndex === 0) {
-          historyIndex = -1;
-          input.value = '';
-        }
+        output.scrollTop += SCROLL_STEP;
+      } else if (e.key === 'PageUp') {
+        e.preventDefault();
+        output.scrollTop -= output.clientHeight;
+      } else if (e.key === 'PageDown') {
+        e.preventDefault();
+        output.scrollTop += output.clientHeight;
       }
     });
 
