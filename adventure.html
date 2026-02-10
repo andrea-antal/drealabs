@@ -66,14 +66,22 @@
 
     .game-container {
       max-width: 720px;
-      margin: 1.5rem auto;
+      margin: 0 auto;
       padding: 1.5rem;
       display: flex;
       flex-direction: column;
-      height: calc(100vh - 3rem);
+      height: 100vh;
       width: 100%;
+    }
+
+    .terminal-frame {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
       border: 1px solid var(--border);
       border-radius: 4px;
+      padding: 1rem;
+      min-height: 0;
     }
 
     .game-header {
@@ -236,7 +244,7 @@
 
     .input-area {
       border-top: 1px dashed var(--border);
-      padding-top: 1rem;
+      padding-top: 0.75rem;
       display: flex;
       align-items: center;
       gap: 0.5rem;
@@ -324,12 +332,14 @@
       </nav>
     </header>
 
-    <div class="output-area" id="output"></div>
+    <div class="terminal-frame">
+      <div class="output-area" id="output"></div>
 
-    <div class="input-area">
-      <span class="prompt-symbol">&gt;</span>
-      <input type="text" id="game-input" placeholder="enter command..." autofocus autocomplete="off" spellcheck="false">
-      <span class="scroll-hint">&#8593;&#8595; scroll</span>
+      <div class="input-area">
+        <span class="prompt-symbol">&gt;</span>
+        <input type="text" id="game-input" placeholder="enter command..." autofocus autocomplete="off" spellcheck="false">
+        <span class="scroll-hint">&#8593;&#8595; scroll</span>
+      </div>
     </div>
   </div>
 
