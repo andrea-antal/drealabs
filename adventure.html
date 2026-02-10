@@ -123,7 +123,7 @@
 
     .output-area {
       flex: 1;
-      overflow-y: auto;
+      overflow-y: scroll;
       padding: 0.5rem 0;
       min-height: 300px;
     }
@@ -864,16 +864,16 @@
         input.value = '';
       } else if (e.key === 'ArrowUp') {
         e.preventDefault();
-        output.scrollTop -= SCROLL_STEP;
+        output.scrollBy({ top: -SCROLL_STEP });
       } else if (e.key === 'ArrowDown') {
         e.preventDefault();
-        output.scrollTop += SCROLL_STEP;
+        output.scrollBy({ top: SCROLL_STEP });
       } else if (e.key === 'PageUp') {
         e.preventDefault();
-        output.scrollTop -= output.clientHeight;
+        output.scrollBy({ top: -output.clientHeight });
       } else if (e.key === 'PageDown') {
         e.preventDefault();
-        output.scrollTop += output.clientHeight;
+        output.scrollBy({ top: output.clientHeight });
       }
     });
 
