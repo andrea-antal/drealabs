@@ -66,12 +66,14 @@
 
     .game-container {
       max-width: 720px;
-      margin: 0 auto;
+      margin: 1.5rem auto;
       padding: 1.5rem;
       display: flex;
       flex-direction: column;
-      height: 100vh;
+      height: calc(100vh - 3rem);
       width: 100%;
+      border: 1px solid var(--border);
+      border-radius: 4px;
     }
 
     .game-header {
@@ -327,7 +329,7 @@
     <div class="input-area">
       <span class="prompt-symbol">&gt;</span>
       <input type="text" id="game-input" placeholder="enter command..." autofocus autocomplete="off" spellcheck="false">
-      <span class="scroll-hint">scroll</span>
+      <span class="scroll-hint">&#8593;&#8595; scroll</span>
     </div>
   </div>
 
