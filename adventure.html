@@ -576,14 +576,12 @@
       line.className = 'output-line' + (className ? ' ' + className : '');
       line.textContent = text;
       output.appendChild(line);
-      scrollToBottom();
     }
 
     function printHTML(html) {
       const div = document.createElement('div');
       div.innerHTML = html;
       output.appendChild(div);
-      scrollToBottom();
     }
 
     function scrollToBottom() {
@@ -596,7 +594,6 @@
       pre.className = 'ascii-room';
       pre.textContent = ascii;
       output.appendChild(pre);
-      scrollToBottom();
     }
 
     // Room description
@@ -741,6 +738,10 @@
       const input = cmd.trim();
       if (input === '') return;
 
+      // Mark where new output starts so we can scroll here after
+      const marker = document.createElement('div');
+      output.appendChild(marker);
+
       print(input, 'command');
 
       // Check easter eggs first
@@ -872,6 +873,9 @@
         default:
           print("I don't understand that command. Type 'help' for a list of commands.", 'error');
       }
+
+      // Scroll so the start of new output is at the top
+      marker.scrollIntoView({ block: 'start' });
     }
 
     // Input handling
@@ -919,6 +923,7 @@
       print('Type "help" for a list of commands.', 'flavor');
       print('');
       describeRoom(currentRoom);
+      scrollToBottom();
 
       // Enable input
       input.disabled = false;
