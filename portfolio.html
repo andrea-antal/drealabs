@@ -583,7 +583,7 @@
           !p.description.startsWith('Placeholder') &&
           !['helm', 'sonar', 'guestbook'].includes(p.id) &&
           p.tech.length > 0
-        );
+        ).reverse();
 
         if (realProjects.length === 0) {
           container.innerHTML = '<p class="empty-state">No projects found. Check back soon.</p>';

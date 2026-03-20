@@ -137,14 +137,14 @@
         },
         {
           "id": "tank-7",
-          "title": "Project 7 - Alien",
-          "description": "Placeholder description for tank 7. Replace with actual project details.",
-          "tech": ["Tech1", "Tech2"],
+          "title": "Cyberspace Saga",
+          "description": "A Choose Your Own Adventure-style decision journal. Map out real-life decisions as branching narratives — explore paths, weigh tradeoffs, and see where each choice leads.",
+          "tech": ["TypeScript", "Vite", "CSS", "Vercel KV", "Claude API", "Google Gemini"],
           "links": {
-            "live": "https://example.com",
-            "github": "https://github.com/example"
+            "live": "https://yoursaga.cc",
+            "github": "https://github.com/andrea-antal/cyberspace-saga"
           },
-          "screenshots": [],
+          "screenshots": ["assets/projects/7-cyberspace-saga.png"],
           "hotspot": {
             "x": 1250,
             "y": -250,
@@ -356,7 +356,8 @@
           "tech": [],
           "links": {},
           "screenshots": [],
-          "hotspot": { "x": 28, "y": -59, "width": 165, "height": 128 }
+          "hotspot": { "x": 28, "y": -59, "width": 165, "height": 128 },
+          "disabled": true
         }
       ],
       "npcs": []
