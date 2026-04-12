@@ -120,14 +120,16 @@
         },
         {
           "id": "tank-6",
-          "title": "Project 6 - Cloud",
-          "description": "Placeholder description for tank 6. Replace with actual project details.",
-          "tech": ["Tech1", "Tech2"],
+          "title": "Cubbylist",
+          "description": "A daycare search and tracker for Metro Vancouver parents. This came from my own frustration trying to find a daycare for my child. I had to build my own solution for a particularly chaotic time in my life as a new parent - I'm hoping this will help many other parents in the same boat.",
+          "tech": ["Next.js", "CSS"],
           "links": {
-            "live": "https://example.com",
-            "github": "https://github.com/example"
+            "live": "https://cubbylist.ca"
           },
-          "screenshots": [],
+          "screenshots": [
+            "assets/projects/6-cubbylist-1.png",
+            "assets/projects/6-cubbylist-2.png"
+          ],
           "hotspot": {
             "x": 1030,
             "y": -250,

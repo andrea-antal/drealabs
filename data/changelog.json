@@ -1,6 +1,15 @@
 {
   "entries": [
     {
+      "version": "0.7",
+      "date": "2026-04-11",
+      "title": "Cubbylist",
+      "changes": [
+        "Added Cubbylist project — a daycare search and tracker for Metro Vancouver parents",
+        "Cloud tank now links to cubbylist.ca"
+      ]
+    },
+    {
       "version": "0.6",
       "date": "2026-03-19",
       "title": "Cyberspace Saga",
