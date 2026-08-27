@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { getScene, getCamera, getRenderer } from './scene.js';
 import { walkTo, getPosition } from './character.js';
+import { flashOpacity } from './how-to-prompt.js';
 
 let hotspotMeshes = [];
 let raycaster;
@@ -31,6 +32,16 @@ let pulseEnabled = false;
 let proximityPulsingHotspots = [];
 let proximityPulsePhase = 0;
 let lastProximityPulsedIds = new Set();
+
+// Attract pulse (one hotspot asking to be clicked, e.g. the how-to screen)
+let attractMesh = null;
+let attractStart = 0;
+let attractFrame = null;
+let attractBaseColor = null;
+
+// Hotspots wash white on hover. An attract pulse washes in the site accent
+// instead, so the flash reads as the screen lighting up rather than as glare.
+const ATTRACT_COLOR = 0x00ffd0;
 
 export function initHotspots(projects, clickCallback) {
   const scene = getScene();
@@ -324,6 +335,7 @@ export function checkProximityPulse(characterX, characterY, proximityThreshold =
   const nearbyHotspots = [];
 
   for (const mesh of hotspotMeshes) {
+    if (mesh === attractMesh) continue; // its own pulse owns this mesh
     const xDistance = Math.abs(mesh.position.x - characterX);
 
     if (xDistance < proximityThreshold && !lastProximityPulsedIds.has(mesh.userData.projectId)) {
@@ -379,6 +391,67 @@ function animateProximityPulse() {
   }
 }
 
+/**
+ * Flash one hotspot until something stops it.
+ *
+ * Unlike the idle and proximity pulses, this one does not end on its own: it is a
+ * standing invitation to click, so it repeats until `stopAttractPulse` is called.
+ * The blink shape comes from `flashOpacity`, and hovering the hotspot hands it
+ * back to the hover highlight for as long as the pointer is on it.
+ *
+ * @param {string} projectId - id of the hotspot to flash
+ * @returns {boolean} true if a hotspot with that id was found
+ */
+export function startAttractPulse(projectId) {
+  const mesh = hotspotMeshes.find(m => m.userData.projectId === projectId);
+  if (!mesh) return false;
+
+  stopAttractPulse();
+  attractMesh = mesh;
+  attractBaseColor = mesh.material.color.getHex();
+  mesh.material.color.setHex(ATTRACT_COLOR);
+  attractStart = performance.now();
+  attractFrame = requestAnimationFrame(animateAttractPulse);
+  return true;
+}
+
+/** Stop the attract pulse and return its hotspot to the base opacity. */
+export function stopAttractPulse() {
+  if (attractFrame !== null) {
+    cancelAnimationFrame(attractFrame);
+    attractFrame = null;
+  }
+  if (attractMesh) {
+    if (attractMesh !== hoveredHotspot) {
+      attractMesh.material.opacity = DEBUG_HOTSPOTS ? 0.3 : 0;
+    }
+    if (attractBaseColor !== null) {
+      attractMesh.material.color.setHex(attractBaseColor);
+      attractBaseColor = null;
+    }
+    attractMesh = null;
+  }
+}
+
+function animateAttractPulse() {
+  if (!attractMesh) return;
+
+  const baseOpacity = DEBUG_HOTSPOTS ? 0.3 : 0;
+
+  // Hold still while a panel is open or the pointer is on the hotspot. The pulse
+  // keeps running underneath so it picks up again the moment either ends.
+  if (!enabled || attractMesh === hoveredHotspot) {
+    if (attractMesh !== hoveredHotspot) {
+      attractMesh.material.opacity = baseOpacity;
+    }
+  } else {
+    const opacity = flashOpacity(performance.now() - attractStart);
+    attractMesh.material.opacity = Math.max(opacity, baseOpacity);
+  }
+
+  attractFrame = requestAnimationFrame(animateAttractPulse);
+}
+
 export function disposeHotspots() {
   const scene = getScene();
   const canvas = getRenderer().domElement;
@@ -396,6 +469,9 @@ export function disposeHotspots() {
     window.removeEventListener('resize', resizeHandler);
     resizeHandler = null;
   }
+
+  // Stop the attract pulse before its mesh is disposed
+  stopAttractPulse();
 
   // Stop pulse intervals
   if (pulseInterval) {

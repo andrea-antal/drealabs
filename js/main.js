@@ -1,10 +1,11 @@
 import * as THREE from 'three';
 import { initScene, loadBackground, lerpCameraTo, screenToWorld, worldToScreen, render, getRenderer, setSceneDimensions, disposeScene } from './scene.js';
 import { initCharacter, loadCharacterSprites, walkTo, update as updateCharacter, getPosition, setWalkBounds, getFloorY, isCharacterWalking, setPosition, setFloorY, stopWalking } from './character.js';
-import { initHotspots, setEnabled as setHotspotsEnabled, getHoveredHotspot, checkProximityPulse, disposeHotspots } from './hotspots.js';
+import { initHotspots, setEnabled as setHotspotsEnabled, getHoveredHotspot, checkProximityPulse, startAttractPulse, stopAttractPulse, disposeHotspots } from './hotspots.js';
 import { initNPCs, updateNPCs, setEnabled as setNPCsEnabled, disposeNPCs } from './npcs.js';
-import { initUI, showPanel, closePanel, isPanelOpen, showCaptainsLog, showMessageBottle, showAdventureModal, showPortfolioModal, showNPCDialog, closeNPCDialog, isNPCDialogOpen, showGuestbook, isGuestbookOpen, fadeOut, fadeIn } from './ui.js';
+import { initUI, showPanel, closePanel, isPanelOpen, showCaptainsLog, showMessageBottle, showAdventureModal, showPortfolioModal, showHowTo, showNPCDialog, closeNPCDialog, isNPCDialogOpen, showGuestbook, isGuestbookOpen, fadeOut, fadeIn } from './ui.js';
 import { initSceneManager, loadLevel, checkPortalTrigger, getCurrentLevel, isInTransition, setTransitioning, setCurrentLevel } from './scene-manager.js';
+import { createHowToPrompt } from './how-to-prompt.js';
 import { createIntroGate, dismissesIntro } from './intro-gate.js';
 import { changelogBubbleText } from './changelog-format.js';
 
@@ -27,6 +28,11 @@ let walkBoundsMax = 1800;
 let hasShownEdgeMessage = false;
 let hasShownWelcome = false;
 let hasShownChangelogBubble = false;
+
+// The how-to screen: the lab terminal flashes for a click once the visitor moves.
+// The hotspot only exists in the submarine lab, so the pulse is a no-op elsewhere.
+const HOW_TO_HOTSPOT_ID = 'how-to';
+const howToPrompt = createHowToPrompt();
 
 // The instruction card that holds the scene until the visitor's first input.
 const introGate = createIntroGate();
@@ -273,15 +279,7 @@ function setupFloorClick() {
     // Only walk if clicking on the floor area
     const floorY = getFloorY();
     if (world.y < floorY + 300) { // Allow some tolerance above floor
-      // First walk trigger
-      if (!hasWalkedOnce) {
-        hasWalkedOnce = true;
-        setTimeout(() => {
-          if (!activeBubble && !isPanelOpen() && !isGuestbookOpen()) {
-            showThoughtBubble(firstWalkThought, 3000);
-          }
-        }, 500);
-      }
+      onFirstMove();
 
       walkTo(world.x);
     }
@@ -305,15 +303,7 @@ function setupKeyboardControls() {
     const currentPos = getPosition();
 
     if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
-      // First walk trigger
-      if (!hasWalkedOnce) {
-        hasWalkedOnce = true;
-        setTimeout(() => {
-          if (!activeBubble && !isPanelOpen() && !isGuestbookOpen()) {
-            showThoughtBubble(firstWalkThought, 3000);
-          }
-        }, 500);
-      }
+      onFirstMove();
 
       if (event.key === 'ArrowLeft') {
         walkTo(currentPos.x - moveDistance);
@@ -322,6 +312,23 @@ function setupKeyboardControls() {
       }
     }
   });
+}
+
+// The visitor's first move ends the welcome and opens the tutorial: the character
+// thinks out loud, and the lab terminal behind them starts asking for a click.
+function onFirstMove() {
+  if (hasWalkedOnce) return;
+  hasWalkedOnce = true;
+
+  setTimeout(() => {
+    if (!activeBubble && !isPanelOpen() && !isGuestbookOpen()) {
+      showThoughtBubble(firstWalkThought, 3000);
+    }
+  }, 500);
+
+  if (howToPrompt.firstMove()) {
+    startAttractPulse(HOW_TO_HOTSPOT_ID);
+  }
 }
 
 function onHotspotClicked(project) {
@@ -342,6 +349,11 @@ function onHotspotClicked(project) {
   } else if (project.id === 'filing-cabinet') {
     // Show portfolio modal
     showPortfolioModal();
+  } else if (project.id === HOW_TO_HOTSPOT_ID) {
+    // The guide has been read, so the screen has nothing left to ask for
+    howToPrompt.open();
+    stopAttractPulse();
+    showHowTo();
   } else {
     showPanel(project);
   }
@@ -529,6 +541,13 @@ async function handlePortalTransition(portal) {
 
   // Initialize hotspots for new level
   initHotspots(targetLevel.projects, onHotspotClicked);
+
+  // Disposing the old level killed the pulse. Restart it if the visitor walked
+  // out of the lab without reading the guide, so it is still there on their way
+  // back; the hotspot is absent in every other level, so this is a no-op there.
+  if (howToPrompt.isFlashing()) {
+    startAttractPulse(HOW_TO_HOTSPOT_ID);
+  }
 
   // Initialize NPCs for new level
   if (targetLevel.npcs && targetLevel.npcs.length > 0) {

@@ -570,9 +570,10 @@ body {
   text-shadow: 0 2px 24px rgba(0, 0, 0, 0.9);
 }
 
-/* Navigation Modals (Adventure & Portfolio) */
+/* Navigation Modals (Adventure, Portfolio & How-To) */
 #adventure-modal,
-#portfolio-modal {
+#portfolio-modal,
+#how-to-modal {
   position: fixed;
   top: 0;
   left: 0;
@@ -589,13 +590,15 @@ body {
 }
 
 #adventure-modal.visible,
-#portfolio-modal.visible {
+#portfolio-modal.visible,
+#how-to-modal.visible {
   opacity: 1;
   visibility: visible;
 }
 
 #adventure-modal .modal-content,
-#portfolio-modal .modal-content {
+#portfolio-modal .modal-content,
+#how-to-modal .modal-content {
   background: var(--bg);
   border: 2px solid var(--accent);
   padding: 2rem;
@@ -657,6 +660,75 @@ body {
 .modal-button:hover {
   background: var(--accent);
   color: var(--bg);
+}
+
+/* How-To Guide — styled as the lab terminal the visitor just clicked */
+#how-to-modal .modal-content {
+  max-width: 560px;
+  text-align: left;
+  background: #0d1a14;
+  box-shadow: 0 0 40px rgba(0, 255, 208, 0.15);
+}
+
+#how-to-modal .modal-title {
+  font-family: 'Courier New', Courier, monospace;
+  letter-spacing: 0.08em;
+  margin-bottom: 0.75rem;
+}
+
+#how-to-modal .modal-description {
+  margin-bottom: 1.25rem;
+  font-size: 0.9375rem;
+}
+
+.how-to-list {
+  list-style: none;
+  counter-reset: how-to;
+  margin-bottom: 1.75rem;
+}
+
+.how-to-list li {
+  counter-increment: how-to;
+  position: relative;
+  padding-left: 1.75rem;
+  margin-bottom: 1.125rem;
+  font-size: 0.9375rem;
+  line-height: 1.6;
+  color: var(--text);
+}
+
+.how-to-list li::before {
+  content: counter(how-to) '.';
+  position: absolute;
+  left: 0;
+  color: var(--accent);
+  font-family: 'Courier New', Courier, monospace;
+  font-weight: 700;
+}
+
+.how-to-key {
+  color: var(--accent);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+.how-to-list a {
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  transition: color 0.2s ease;
+}
+
+.how-to-list a:hover,
+.how-to-list a:focus-visible {
+  color: var(--accent-hover);
+}
+
+#how-to-dismiss {
+  cursor: pointer;
+  font-family: inherit;
+  display: block;
+  margin: 0 auto;
 }
 
 /* Captain's Log Overlay */

@@ -7,6 +7,7 @@ let captainsLogElement;
 let messageBottleElement;
 let adventureModalElement;
 let portfolioModalElement;
+let howToModalElement;
 let lightboxElement;
 let transitionOverlay;
 let npcDialogElement;
@@ -62,6 +63,7 @@ export function initUI(closeCallback) {
   messageBottleElement = document.getElementById('message-bottle');
   adventureModalElement = document.getElementById('adventure-modal');
   portfolioModalElement = document.getElementById('portfolio-modal');
+  howToModalElement = document.getElementById('how-to-modal');
   lightboxElement = document.getElementById('image-lightbox');
   transitionOverlay = document.getElementById('transition-overlay');
   npcDialogElement = document.getElementById('npc-dialog');
@@ -140,6 +142,19 @@ export function initUI(closeCallback) {
     });
     const closeBtn = portfolioModalElement.querySelector('.modal-close');
     if (closeBtn) closeBtn.addEventListener('click', closePortfolioModal);
+  }
+
+  // How-to guide close handlers
+  if (howToModalElement) {
+    howToModalElement.addEventListener('click', (e) => {
+      if (e.target === howToModalElement) {
+        closeHowTo();
+      }
+    });
+    const closeBtn = howToModalElement.querySelector('.modal-close');
+    if (closeBtn) closeBtn.addEventListener('click', closeHowTo);
+    const dismissBtn = howToModalElement.querySelector('#how-to-dismiss');
+    if (dismissBtn) dismissBtn.addEventListener('click', closeHowTo);
   }
 
   // Carousel arrow click handlers
@@ -434,6 +449,24 @@ export function closePortfolioModal() {
   }
 }
 
+export function showHowTo() {
+  if (!howToModalElement) return;
+
+  howToModalElement.classList.add('visible');
+  isOpen = true;
+}
+
+export function closeHowTo() {
+  if (!howToModalElement) return;
+
+  howToModalElement.classList.remove('visible');
+  isOpen = false;
+
+  if (onCloseCallback) {
+    onCloseCallback();
+  }
+}
+
 export function showNPCDialog(npc) {
   if (!npcDialogElement || !npc) return;
 
@@ -695,6 +728,12 @@ function closeAll() {
     closeCaptainsLog();
   } else if (messageBottleElement?.classList.contains('visible')) {
     closeMessageBottle();
+  } else if (howToModalElement?.classList.contains('visible')) {
+    closeHowTo();
+  } else if (adventureModalElement?.classList.contains('visible')) {
+    closeAdventureModal();
+  } else if (portfolioModalElement?.classList.contains('visible')) {
+    closePortfolioModal();
   } else if (npcDialogElement?.classList.contains('visible')) {
     closeNPCDialog();
   } else if (guestbookElement?.classList.contains('open')) {
