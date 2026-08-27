@@ -18,6 +18,7 @@
       --text: #e8e4e0;
       --text-muted: #8a8680;
       --border: #2a2826;
+      --radius: 6px;
     }
 
     * {
@@ -281,6 +282,7 @@
       width: 160px;
       height: 120px;
       border: 1px solid var(--border);
+      border-radius: var(--radius);
       overflow: hidden;
       cursor: pointer;
       opacity: 0.7;
@@ -298,10 +300,15 @@
       opacity: 1;
     }
 
+    /* Safari keeps painting square image corners inside a rounded, clipped
+       button, so the radius goes on the image too rather than on the clip
+       alone. Sits just inside the 1px border. */
+
     .screenshot-thumb img {
       width: 100%;
       height: 100%;
       object-fit: cover;
+      border-radius: calc(var(--radius) - 1px);
       filter: saturate(0.7);
       transition: filter 0.2s ease;
     }
@@ -343,6 +350,7 @@
       max-height: 85vh;
       display: block;
       border: 1px solid var(--border);
+      border-radius: var(--radius);
     }
 
     .lightbox-close {
@@ -507,6 +515,8 @@
   </div>
 
   <script type="module">
+    import { orderProjects } from './js/project-order.js';
+
     // Lightbox state
     let currentImages = [];
     let currentIndex = 0;
@@ -572,18 +582,7 @@
         const response = await fetch('data/projects.json');
         const data = await response.json();
 
-        const allProjects = [];
-        for (const level of Object.values(data.levels)) {
-          if (level.projects) {
-            allProjects.push(...level.projects);
-          }
-        }
-
-        const realProjects = allProjects.filter(p =>
-          !p.description.startsWith('Placeholder') &&
-          !['helm', 'sonar', 'guestbook'].includes(p.id) &&
-          p.tech.length > 0
-        ).reverse();
+        const realProjects = orderProjects(data.levels);
 
         if (realProjects.length === 0) {
           container.innerHTML = '<p class="empty-state">No projects found. Check back soon.</p>';
