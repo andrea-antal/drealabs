@@ -22,6 +22,8 @@
         {
           "id": "drealabs-interactive",
           "title": "Drealabs.com",
+          "added": "2026-02-06",
+          "pin": "last",
           "description": "My portfolio site, built as an interactive point-and-click adventure game. Visitors explore a submarine lab, click on objects to discover projects, and meet NPCs. Features sprite animation, raycasting hotspots, multi-room navigation, and a hidden text adventure.",
           "tech": ["Three.js", "JavaScript", "CSS"],
           "links": {
@@ -33,6 +35,7 @@
         {
           "id": "tank-1",
           "title": "Nathan's Words",
+          "added": "2026-01-30",
           "description": "A soundboard of cute words my toddler says. Got the idea from a Lenny Rachitsky post. I recorded the audio on my phone, split up each word into separate mp3 files using Descript, then used Claude Code to organize the files and create the site.",
           "tech": ["TypeScript", "JavaScript", "CSS"],
           "links": {
@@ -49,14 +52,17 @@
         },
         {
           "id": "tank-2",
-          "title": "Project 2 - Cactus",
-          "description": "Placeholder description for tank 2. Replace with actual project details.",
-          "tech": ["Tech1", "Tech2"],
+          "title": "magyar ma",
+          "added": "2026-08-27",
+          "description": "I've been learning Hungarian slowly over the past ten years on my own and often got stuck on grammatical concepts that puzzled me (and frankly, after speaking to other Hungarians, is puzzling to them too). I thought it would be useful to make myself a personalized, guided practice app alongside a dictionary that would let me drill and learn based on my own needs, and now I've been using these on a daily basis for a few months with great success. I used Claude to build the practice app and dictionary, and ChatGPT to create the folk flower motif.",
+          "tech": ["JavaScript", "Cloudflare Workers", "CSS"],
           "links": {
-            "live": "https://example.com",
-            "github": "https://github.com/example"
+            "live": "https://magyar-ma.vercel.app"
           },
-          "screenshots": [],
+          "screenshots": [
+            "assets/projects/2-magyar-1.png",
+            "assets/projects/2-magyar-2.png"
+          ],
           "hotspot": {
             "x": 1250,
             "y": 340,
@@ -84,6 +90,7 @@
         {
           "id": "tank-4",
           "title": "AI Meal Planner",
+          "added": "2026-01-30",
           "description": "This was a passion project from the start and what got me deep into Claude Code. I didn't just want to build Yet Another Meal Planner, but try and solve more than the one problem I had with planning and cooking meals. I've loaded it with a ton of natural language/voice input features to make it work for my own use case (most commonly, standing with the fridge door open and pondering out loud what the heck to make with the stuff in there). It's still a major undertaking in progress and the direction is still not yet determined - I'll come back and update when I go through the next major milestone. For now, it's in a closed beta, but I've changed to building in public on github with an MIT license.",
           "tech": ["TypeScript", "Python", "Claude"],
           "links": {
@@ -104,11 +111,12 @@
         },
         {
           "id": "tank-5",
-          "title": "Claude Powered Research Agent",
-          "description": "I wanted to use the Claude Agent SDK to build an agent, so I built one to do in depth research. The agent has a few preset topic domains, which each contain a tailored rubric to determine authenticity/veracity/authoritativeness/bias/trust. The agent outputs the research in synthesized markdown files. After research sessions are complete, I use Claude to have a discussion to pull data from the files. It's been a boon for writing and understanding new topics.",
-          "tech": ["Python"],
+          "title": "Project 5 - Robot",
+          "description": "Placeholder description for tank 5. Replace with actual project details.",
+          "tech": ["Tech1", "Tech2"],
           "links": {
-            "github": "https://github.com/andrea-antal/project-researcher"
+            "live": "https://example.com",
+            "github": "https://github.com/example"
           },
           "screenshots": [],
           "hotspot": {
@@ -121,6 +129,7 @@
         {
           "id": "tank-6",
           "title": "Cubbylist",
+          "added": "2026-04-11",
           "description": "A daycare search and tracker for Metro Vancouver parents. This came from my own frustration trying to find a daycare for my child. I had to build my own solution for a particularly chaotic time in my life as a new parent - I'm hoping this will help many other parents in the same boat.",
           "tech": ["Next.js", "CSS"],
           "links": {
@@ -140,6 +149,7 @@
         {
           "id": "tank-7",
           "title": "Cyberspace Saga",
+          "added": "2026-03-19",
           "description": "A Choose Your Own Adventure-style decision journal. Map out real-life decisions as branching narratives — explore paths, weigh tradeoffs, and see where each choice leads.",
           "tech": ["TypeScript", "Vite", "CSS", "Vercel KV", "Claude API", "Google Gemini"],
           "links": {
@@ -156,14 +166,12 @@
         },
         {
           "id": "tank-8",
-          "title": "Project 8 - Robot Arm",
-          "description": "Placeholder description for tank 8. Replace with actual project details.",
-          "tech": ["Tech1", "Tech2"],
-          "links": {
-            "live": "https://example.com",
-            "github": "https://github.com/example"
-          },
-          "screenshots": [],
+          "title": "X-CMS",
+          "added": "2026-08-27",
+          "description": "I built a simple household knowledge hub that held important information for major ongoing projects in our lives, which really worked great for some time. To update it I would have Claude generate an HTML page for each new item, and now with proven utility and some minor increase in scale, I decided I wanted to make my own mini content management system (because, of course, as one does). I've become a markdown queen in the last few years, so I figure what would work best for my workflow was a local UI that could WYSIWYG my markdown files, then build and ship them. I put together a simple, bold, distinctive template that I liked and worked well on all viewport widths, and now I can throw together some research/reference documents quickly using md files and get them into our household webhome. It's got a simple auth and middleware so it's obviously not the Pentagon, but it is a functional gate that stops humans and robots snooping. I love it and use it all the time.",
+          "tech": ["Node.js", "Markdown", "TypeScript", "Vercel"],
+          "links": {},
+          "screenshots": ["assets/projects/8-xcms.png"],
           "hotspot": {
             "x": 1435,
             "y": -220,
@@ -271,6 +279,15 @@
           "hotspot": { "x": -518, "y": -102, "width": 144, "height": 98 }
         },
         {
+          "id": "how-to",
+          "title": "How To Explore",
+          "description": "The lab terminal, showing how to get around",
+          "tech": [],
+          "links": {},
+          "screenshots": [],
+          "hotspot": { "x": 28, "y": -61, "width": 190, "height": 130 }
+        },
+        {
           "id": "bulletin-1",
           "title": "Bulletin 1",
           "description": "Placeholder description. Bulletin 1 hotspot",
@@ -350,16 +367,6 @@
           "links": {},
           "screenshots": [],
           "hotspot": { "x": 1901, "y": 317, "width": 190, "height": 188 }
-        },
-        {
-          "id": "guestbook",
-          "title": "Guestbook",
-          "description": "Sign the guestbook",
-          "tech": [],
-          "links": {},
-          "screenshots": [],
-          "hotspot": { "x": 28, "y": -59, "width": 165, "height": 128 },
-          "disabled": true
         }
       ],
       "npcs": []
