@@ -1,6 +1,18 @@
 {
   "entries": [
     {
+      "version": "0.8",
+      "date": "2026-08-27",
+      "title": "Lab Terminal & New Projects",
+      "changes": [
+        "Added interaction overlay at startup",
+        "Added Lab Terminal, explains 3 different ways to access portfolio",
+        "Added new project: magyar ma",
+        "Added new project: X-CMS",
+        "Removed stale project: Claude powered research agent"
+      ]
+    },
+    {
       "version": "0.7",
       "date": "2026-04-11",
       "title": "Cubbylist",
