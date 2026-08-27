@@ -36,13 +36,15 @@ async function loadChangelog() {
 
     if (!container) return;
 
-    // Only show the latest entry
-    const latest = data.entries[0];
+    // The current entry fills the first column; every earlier one is indexed in
+    // the second. CSS columns flow them, so neither needs measuring.
+    const [latest, ...history] = data.entries;
     if (latest) {
       container.innerHTML = `
         <div class="changelog-entry">
           <div class="changelog-version">v${latest.version}</div>
           <div class="changelog-date">${formatChangelogDate(latest.date)}</div>
+          <div class="changelog-title">${latest.title}</div>
           <ul class="changelog-list">
             ${latest.changes.map(change => `<li>${change}</li>`).join('')}
           </ul>
@@ -50,10 +52,24 @@ async function loadChangelog() {
       `;
     }
 
+    const historyContainer = document.querySelector('.changelog-history');
+    if (historyContainer) {
+      historyContainer.innerHTML = history.map(historyEntryHTML).join('');
+    }
+
     changelogLoaded = true;
   } catch (e) {
     console.error('Failed to load changelog:', e);
   }
+}
+
+function historyEntryHTML(entry) {
+  return `
+    <div class="log-history-entry">
+      <div class="log-history-version">v${entry.version} · ${formatChangelogDate(entry.date)}</div>
+      <div class="log-history-title">${entry.title}</div>
+    </div>
+  `;
 }
 
 export function initUI(closeCallback) {
