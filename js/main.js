@@ -5,6 +5,7 @@ import { initHotspots, setEnabled as setHotspotsEnabled, getHoveredHotspot, chec
 import { initNPCs, updateNPCs, setEnabled as setNPCsEnabled, disposeNPCs } from './npcs.js';
 import { initUI, showPanel, closePanel, isPanelOpen, showCaptainsLog, showMessageBottle, showAdventureModal, showPortfolioModal, showNPCDialog, closeNPCDialog, isNPCDialogOpen, showGuestbook, isGuestbookOpen, fadeOut, fadeIn } from './ui.js';
 import { initSceneManager, loadLevel, checkPortalTrigger, getCurrentLevel, isInTransition, setTransitioning, setCurrentLevel } from './scene-manager.js';
+import { createIntroGate, dismissesIntro } from './intro-gate.js';
 import { changelogBubbleText } from './changelog-format.js';
 
 let clock;
@@ -26,6 +27,10 @@ let walkBoundsMax = 1800;
 let hasShownEdgeMessage = false;
 let hasShownWelcome = false;
 let hasShownChangelogBubble = false;
+
+// The instruction card that holds the scene until the visitor's first input.
+const introGate = createIntroGate();
+let introOverlay;
 
 // Bubble text options
 const idleThoughts = [
@@ -189,6 +194,14 @@ async function init() {
   if (loadingEl) loadingEl.style.display = 'none';
   isLoading = false;
 
+  // The instruction card goes up first. The welcome bubble waits behind it, so
+  // the visitor reads one thing at a time.
+  introOverlay = document.getElementById('intro-overlay');
+  introOverlay?.addEventListener('click', dismissIntro);
+  if (introGate.ready()) {
+    introOverlay?.classList.add('visible');
+  }
+
   // Initialize bubbles
   speechBubble = document.getElementById('speech-bubble');
   thoughtBubble = document.getElementById('thought-bubble');
@@ -207,17 +220,26 @@ async function init() {
     const portal = getPortalByEdge('right');
     if (portal) handlePortalTransition(portal);
   });
-  setTimeout(() => {
-    hasShownWelcome = true;
-    showSpeechBubble(randomFrom(welcomeSpeech), 0); // Stay until user clicks
-  }, 500);
-
   // Start animation loop
   clock = new THREE.Clock();
   animate();
 
   // Handle resize
   window.addEventListener('resize', checkViewport);
+}
+
+// Lower the instruction card and hand the scene over. The input that dismissed
+// the card is spent here: it must not also walk the character, or the welcome
+// bubble would be talking to someone already halfway across the room.
+function dismissIntro() {
+  if (!introGate.dismiss()) return;
+
+  introOverlay?.classList.remove('visible');
+
+  setTimeout(() => {
+    hasShownWelcome = true;
+    showSpeechBubble(randomFrom(welcomeSpeech), 0); // Stay until user clicks
+  }, 400);
 }
 
 function setupFloorClick() {
@@ -270,6 +292,11 @@ function setupKeyboardControls() {
   const moveDistance = 400; // How far to move per key press
 
   document.addEventListener('keydown', (event) => {
+    if (introGate.state() !== 'open') {
+      if (introGate.isBlocking() && dismissesIntro(event.key)) dismissIntro();
+      return;
+    }
+
     if (isPanelOpen() || isNPCDialogOpen() || isGuestbookOpen() || isInTransition()) return;
 
     // Reset activity timer

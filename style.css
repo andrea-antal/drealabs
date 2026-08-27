@@ -529,6 +529,47 @@ body {
   color: var(--accent);
 }
 
+/* Intro Gate
+   The text box is half the viewport wide by half tall, so it reserves a quarter
+   of the screen. --intro-text-size is the one knob worth turning. */
+#intro-overlay {
+  --intro-text-size: clamp(1.5rem, 4.5vw, 5rem);
+
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1500;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+  cursor: pointer;
+}
+
+#intro-overlay.visible {
+  opacity: 1;
+  visibility: visible;
+}
+
+#intro-overlay .intro-text {
+  width: 50vw;
+  height: 50vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  font-size: var(--intro-text-size);
+  font-weight: 500;
+  line-height: 1.25;
+  color: var(--text);
+  text-shadow: 0 2px 24px rgba(0, 0, 0, 0.9);
+}
+
 /* Navigation Modals (Adventure & Portfolio) */
 #adventure-modal,
 #portfolio-modal {
