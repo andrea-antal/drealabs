@@ -5,6 +5,7 @@ import { initHotspots, setEnabled as setHotspotsEnabled, getHoveredHotspot, chec
 import { initNPCs, updateNPCs, setEnabled as setNPCsEnabled, disposeNPCs } from './npcs.js';
 import { initUI, showPanel, closePanel, isPanelOpen, showCaptainsLog, showMessageBottle, showAdventureModal, showPortfolioModal, showNPCDialog, closeNPCDialog, isNPCDialogOpen, showGuestbook, isGuestbookOpen, fadeOut, fadeIn } from './ui.js';
 import { initSceneManager, loadLevel, checkPortalTrigger, getCurrentLevel, isInTransition, setTransitioning, setCurrentLevel } from './scene-manager.js';
+import { changelogBubbleText } from './changelog-format.js';
 
 let clock;
 let projectsData;
@@ -93,7 +94,9 @@ async function loadProjectsData() {
 
 async function loadChangelogData() {
   try {
-    const response = await fetch('data/changelog.json');
+    // Same cache-buster as the captain's log. Without it a returning visitor's
+    // browser serves the bubble a stale entry while the log shows the new one.
+    const response = await fetch('data/changelog.json?t=' + Date.now());
     changelogData = await response.json();
     return changelogData;
   } catch (e) {
@@ -229,11 +232,11 @@ function setupFloorClick() {
       // Show changelog bubble after welcome is dismissed
       if (wasWelcomeBubble && changelogData?.entries?.length > 0) {
         hasShownChangelogBubble = true;
-        const latest = changelogData.entries[0];
-        const date = new Date(latest.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-        setTimeout(() => {
-          showSpeechBubble(`New in v${latest.version} (${date}): ${latest.title}!`, 5000);
-        }, 300);
+        // Version and date only. The captain's log carries what actually changed.
+        const text = changelogBubbleText(changelogData.entries[0]);
+        if (text) {
+          setTimeout(() => showSpeechBubble(text, 5000), 300);
+        }
       }
     }
 

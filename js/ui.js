@@ -1,4 +1,5 @@
 import { fetchGuestbookEntries, submitGuestbookEntry, formatRelativeTime, canSubmit, getCooldownRemaining } from './guestbook.js';
+import { formatChangelogDate } from './changelog-format.js';
 
 let panelElement;
 let backdropElement;
@@ -40,7 +41,7 @@ async function loadChangelog() {
       container.innerHTML = `
         <div class="changelog-entry">
           <div class="changelog-version">v${latest.version}</div>
-          <div class="changelog-date">${formatDate(latest.date)}</div>
+          <div class="changelog-date">${formatChangelogDate(latest.date)}</div>
           <ul class="changelog-list">
             ${latest.changes.map(change => `<li>${change}</li>`).join('')}
           </ul>
@@ -52,13 +53,6 @@ async function loadChangelog() {
   } catch (e) {
     console.error('Failed to load changelog:', e);
   }
-}
-
-function formatDate(dateStr) {
-  // Parse as local date to avoid timezone shift
-  const [year, month, day] = dateStr.split('-').map(Number);
-  const date = new Date(year, month - 1, day);
-  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
 export function initUI(closeCallback) {
