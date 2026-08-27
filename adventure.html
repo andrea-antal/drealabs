@@ -111,6 +111,14 @@
       line-height: 1.25;
       white-space: pre;
       margin: 0.75rem 0;
+      /* The fully-explored map is 59 characters wide. Let it scroll inside its
+         own box on a narrow screen instead of widening the page. */
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+
+    .ascii-room::-webkit-scrollbar {
+      display: none;
     }
 
     .nav-links {
@@ -327,7 +335,7 @@
       <div class="game-subtitle">DREALABS ADVENTURE v0.5 // A text adventure</div>
       <nav class="nav-links">
         <a href="/">[ interactive ]</a>
-        <a href="/portfolio">[ portfolio ]</a>
+        <a href="/portfolio.html">[ portfolio ]</a>
         <a href="https://drealabs.substack.com">[ blog ]</a>
       </nav>
     </header>
@@ -343,12 +351,27 @@
     </div>
   </div>
 
-  <script>
+  <script type="module">
+    import { attachProjects } from './js/adventure-projects.js';
+    import { renderMap } from './js/adventure-map.js';
+
+    // Project facts live in data/projects.json, the same file the submarine and
+    // the text portfolio read. Orbs below name a `projectId` and nothing else, so
+    // a project can never be removed in one place and still quoted here.
+    //
+    // A failed fetch resolves to null, which dims every orb but leaves the
+    // adventure playable. Better a dark room than a crash.
+    const levels = await fetch('data/projects.json')
+      .then(response => (response.ok ? response.json() : null))
+      .then(data => data && data.levels)
+      .catch(() => null);
+
     // Game data
     const dungeon = {
       rooms: {
         'grand-atrium': {
           name: 'The Grand Atrium',
+          mapLabel: 'Atrium',
           ascii: `
                          [NORTH]
                             |
@@ -364,13 +387,19 @@
           description: 'You stand in a vast circular chamber carved from ancient stone. Phosphorescent moss clings to towering pillars that disappear into darkness above. At the center, a shimmering portal swirls with otherworldly light, its surface rippling like liquid mercury.',
           exits: { north: 'sanctum', south: 'vault', east: 'constructs', west: 'whispers' },
           objects: {
+            'pale orb': {
+              name: 'a pale orb',
+              keywords: ['pale orb', 'pale', 'orb', 'white orb', 'central orb'],
+              examine: 'A pale orb hangs above the portal, turning slowly. It shows no single vision - only this chamber, and the corridors leading off it, seen from somewhere above. You are looking at the archive looking at itself.',
+              projectId: 'drealabs-interactive'
+            },
             'portal': {
               name: 'a shimmering portal',
               keywords: ['portal', 'shimmering portal', 'gateway'],
               examine: 'The portal swirls with possibility, its surface reflecting glimpses of other realms. Through the rippling light, you glimpse different versions of this archive...',
               links: {
                 'Interactive Version': '/',
-                'Terminal Portfolio': '/portfolio'
+                'Terminal Portfolio': '/portfolio.html'
               }
             },
             'pillars': {
@@ -387,6 +416,7 @@
         },
         'whispers': {
           name: 'The Hall of Whispers',
+          mapLabel: 'Whispers',
           ascii: `
     _________________________________________
    |                                         |
@@ -396,20 +426,13 @@
    |_________________________________________|
        ~         ~         ~         ~`,
           description: 'Echoes of forgotten conversations drift through this narrow corridor. The walls are lined with alcoves, each containing a softly glowing crystal orb on a stone pedestal. An amber orb pulses warmly in the nearest alcove.',
-          exits: { east: 'grand-atrium' },
+          exits: { east: 'grand-atrium', west: 'archive' },
           objects: {
             'amber orb': {
               name: 'an amber orb',
               keywords: ['amber orb', 'amber', 'orb', 'crystal', 'warm orb'],
               examine: 'You reach toward the amber orb. As your fingers brush its surface, warmth floods through you, and voices emerge - not whispers of the dead, but joyful sounds of childhood...',
-              project: {
-                title: "Nathan's Words",
-                description: "A soundboard of cute words my toddler says. Got the idea from a Lenny Rachitsky post. I recorded the audio on my phone, split up each word into separate mp3 files using Descript, then used Claude Code to organize the files and create the site.",
-                tech: ['TypeScript', 'JavaScript', 'CSS'],
-                links: {
-                  github: 'https://github.com/andrea-antal/baby-words'
-                }
-              }
+              projectId: 'tank-1'
             },
             'alcoves': {
               name: 'stone alcoves',
@@ -420,6 +443,7 @@
         },
         'constructs': {
           name: 'The Chamber of Constructs',
+          mapLabel: 'Constructs',
           ascii: `
               ___________
              |    (O)    |
@@ -430,20 +454,13 @@
              ||  ^ ^ ^  ||
              |___________|`,
           description: 'Arcane machinery fills this room - gears of unknown metals, tubes containing glowing fluids, and crystalline matrices that hum with energy. A violet orb floats above a central apparatus, crackling with eldritch power.',
-          exits: { west: 'grand-atrium' },
+          exits: { west: 'grand-atrium', east: 'foundry' },
           objects: {
             'violet orb': {
               name: 'a violet orb',
               keywords: ['violet orb', 'violet', 'orb', 'purple orb', 'purple', 'floating orb'],
-              examine: 'The violet orb crackles with artificial intelligence - not magic, but something close. When you touch it, your mind fills with visions of vast networks of knowledge being searched, synthesized, understood...',
-              project: {
-                title: 'Claude Powered Research Agent',
-                description: "I wanted to use the Claude Agent SDK to build an agent, so I built one to do in depth research. The agent has a few preset topic domains, which each contain a tailored rubric to determine authenticity/veracity/authoritativeness/bias/trust. The agent outputs the research in synthesized markdown files. After research sessions are complete, I use Claude to have a discussion to pull data from the files. It's been a boon for writing and understanding new topics.",
-                tech: ['Python'],
-                links: {
-                  github: 'https://github.com/andrea-antal/project-researcher'
-                }
-              }
+              examine: 'The violet orb crackles with ordered knowledge. When you touch it, your mind fills with visions of a household archive - plain words written once, then bound, indexed, and set behind a locked door...',
+              projectId: 'tank-8'
             },
             'machinery': {
               name: 'arcane machinery',
@@ -454,6 +471,7 @@
         },
         'sanctum': {
           name: 'The Sanctum of Echoes',
+          mapLabel: 'Sanctum',
           ascii: `
                _____
             .-'     '-.
@@ -466,20 +484,13 @@
                  |
               [SOUTH]`,
           description: 'A domed chamber where sounds linger impossibly long. Your footsteps create symphonies that take long moments to fade. An emerald orb rests on an altar at the chamber\'s heart, its surface swirling with what looks like recipes and ingredient lists.',
-          exits: { south: 'grand-atrium' },
+          exits: { south: 'grand-atrium', north: 'reliquary' },
           objects: {
             'emerald orb': {
               name: 'an emerald orb',
               keywords: ['emerald orb', 'emerald', 'orb', 'green orb', 'green'],
               examine: 'The emerald orb shows visions of kitchens and meals, of ingredients combining in perfect harmony. It hums with the satisfaction of a well-planned dinner...',
-              project: {
-                title: 'AI Meal Planner',
-                description: "This was a passion project from the start and what got me deep into Claude Code. I didn't just want to build Yet Another Meal Planner, but try and solve more than the one problem I had with planning and cooking meals. I've loaded it with a ton of natural language/voice input features to make it work for my own use case (most commonly, standing with the fridge door open and pondering out loud what the heck to make with the stuff in there). It's still a major undertaking in progress and the direction is still not yet determined - I'll come back and update when I go through the next major milestone. For now, it's in a closed beta, but I've changed to building in public on github with an MIT license.",
-                tech: ['TypeScript', 'Python', 'Claude'],
-                links: {
-                  github: 'https://github.com/andrea-antal/mealplanner'
-                }
-              }
+              projectId: 'tank-4'
             },
             'altar': {
               name: 'a stone altar',
@@ -495,6 +506,7 @@
         },
         'vault': {
           name: 'The Deep Vault',
+          mapLabel: 'Vault',
           ascii: `
               [NORTH]
                  |
@@ -508,7 +520,7 @@
              \\       /
               \\_____/`,
           description: 'You descend into the deepest chamber of the archive. The air is thick with potential. Empty pedestals line the walls, waiting for future treasures. In the center, a single orb rests - but it is dim, dormant, holding secrets not yet ready to be revealed.',
-          exits: { north: 'grand-atrium' },
+          exits: { north: 'grand-atrium', south: 'oubliette' },
           objects: {
             'dormant orb': {
               name: 'a dormant orb',
@@ -527,10 +539,145 @@
               examine: 'The darkness here feels alive, pregnant with possibility. It\'s not threatening - just... waiting.'
             }
           }
-        }
+        },
+        'archive': {
+          name: 'The Sunken Archive',
+          mapLabel: 'Archive',
+          ascii: `
+        ___________________
+       |  =============    |
+       |  ==  \u016B \u0151 \u0171  ==    |
+       |  =============    |
+       |     .-'''-.       |
+       |    ( (O) )        |
+       |     '-...-'       |
+       |___________________|
+              [EAST]`,
+          description: 'Water has been here. The shelves are warped and the labels have run, yet the words themselves survive - carved, not written. Every surface carries the same handful of shapes in endless recombination, as if one short alphabet were being asked to do the work of a whole language. A copper orb sits in a dry alcove.',
+          exits: { east: 'whispers' },
+          objects: {
+            'copper orb': {
+              name: 'a copper orb',
+              keywords: ['copper orb', 'copper', 'orb', 'bronze orb'],
+              examine: 'The copper orb is warm and slightly worn, as though handled daily for years. Touching it, you hear a word you almost know, then its shape changes and you lose it, then it comes back wearing a different ending...',
+              projectId: 'tank-2'
+            },
+            'shelves': {
+              name: 'warped shelves',
+              keywords: ['shelves', 'shelf', 'labels', 'racks'],
+              examine: 'The shelves sag under their own weight. Whatever order they once held has long since given way to something more stubborn: everything is still here, just not where it was put.'
+            },
+            'carvings': {
+              name: 'carved words',
+              keywords: ['carvings', 'carving', 'words', 'inscriptions', 'alphabet'],
+              examine: 'The same roots recur with endless tails fixed to them. One carving has been struck through and cut again, deeper, as if the carver had learned the rule only halfway through.'
+            }
+          }
+        },
+        'foundry': {
+          name: 'The Foundry',
+          mapLabel: 'Foundry',
+          ascii: `
+         [WEST]
+            |
+     _______|_______
+    |   /\\   /\\   /\\  |
+    |  /__\\ /__\\ /__\\ |
+    |   ||   ||   ||  |
+    |  _||___||___||_ |
+    |  (   (O)      ) |
+    |________________|`,
+          description: 'Heat rolls off banked furnaces. Rows of half-finished castings wait on racks, each one a slight variation on the one beside it, and a tally scratched into the wall counts something that has clearly been counted many times. A brass orb rests in a mould that fits it exactly.',
+          exits: { west: 'constructs' },
+          objects: {
+            'brass orb': {
+              name: 'a brass orb',
+              keywords: ['brass orb', 'brass', 'orb', 'gold orb'],
+              examine: 'The brass orb is heavier than it looks. Inside it you see rooms full of small children and a long list of doors, each door with a number beside it, and a parent going down the list one door at a time...',
+              projectId: 'tank-6'
+            },
+            'furnaces': {
+              name: 'banked furnaces',
+              keywords: ['furnaces', 'furnace', 'fire', 'forge', 'heat'],
+              examine: 'The fires are kept low but never let out. Someone has been tending them a long time, and intends to go on tending them.'
+            },
+            'castings': {
+              name: 'half-finished castings',
+              keywords: ['castings', 'casting', 'moulds', 'mould', 'racks'],
+              examine: 'Each casting is a near-copy of the last, with one edge filed differently. Whoever works here does not start over; they adjust, and then adjust again.'
+            }
+          }
+        },
+        'reliquary': {
+          name: 'The Reliquary of Paths',
+          mapLabel: 'Reliquary',
+          ascii: `
+          .-'-.-'-.
+         /  /   \\  \\
+        |  |  o  |  |
+        |   \\ | /   |
+         \\   \\|/   /
+          '-. | .-'
+            (O)
+             |
+          [SOUTH]`,
+          description: 'Threads hang from the ceiling in their thousands, each splitting again and again as it falls, and every split is labelled in a hand you recognise as your own. Some branches are worn smooth from handling. Most were never touched at all. A silver orb hangs at the point where every thread begins.',
+          exits: { south: 'sanctum' },
+          objects: {
+            'silver orb': {
+              name: 'a silver orb',
+              keywords: ['silver orb', 'silver', 'orb', 'grey orb'],
+              examine: 'The silver orb shows a choice you once made, and then - without any sense of contradiction - shows you making the other one, and what followed, and what followed that...',
+              projectId: 'tank-7'
+            },
+            'threads': {
+              name: 'branching threads',
+              keywords: ['threads', 'thread', 'branches', 'branch', 'strings'],
+              examine: 'Follow any thread down and it divides, and divides again. Follow it up and it narrows to a single strand, which is the unsettling part.'
+            },
+            'labels': {
+              name: 'handwritten labels',
+              keywords: ['labels', 'label', 'writing', 'handwriting'],
+              examine: 'Each label is a short sentence beginning "if". None of them begin "when".'
+            }
+          }
+        },
+        'oubliette': {
+          name: 'The Oubliette',
+          mapLabel: 'Oubliette',
+          ascii: `
+          [NORTH]
+             |
+        _____|_____
+       |           |
+       |     .     |
+       |           |
+       |     ( )   |
+       |           |
+       |___________|`,
+          description: 'A narrow shaft of light falls from the passage above into a room that holds almost nothing. This is a place for things put down deliberately and not picked up again. A single orb lies on the floor, uncradled, and gives off no light at all.',
+          exits: { north: 'vault' },
+          objects: {
+            'spent orb': {
+              name: 'a spent orb',
+              keywords: ['spent orb', 'spent', 'orb', 'dull orb', 'dead orb'],
+              examine: 'The orb is cold and completely inert. Whatever it held has been taken out and put somewhere more useful.',
+              flavor: 'Some things are set down on purpose. This one was.'
+            },
+            'shaft': {
+              name: 'the shaft of light',
+              keywords: ['shaft', 'light', 'beam', 'opening'],
+              examine: 'The light comes from the vault above. It is the only way in, and the only way out.'
+            }
+          }
+        },
       },
       startRoom: 'grand-atrium'
     };
+
+    // Fill every orb that names a projectId. An orb whose project is gone dims
+    // rather than going stale.
+    dungeon.rooms = attachProjects(dungeon.rooms, levels);
 
     // Easter eggs
     const easterEggs = {
@@ -564,6 +711,9 @@
 
     // Game state
     let currentRoom = dungeon.startRoom;
+    // Rooms the player has stood in. The map draws these by name and marks
+    // their unvisited neighbours with a question mark.
+    const visited = new Set([dungeon.startRoom]);
     const SCROLL_STEP = 80; // pixels per arrow key press
 
     // DOM elements
@@ -713,6 +863,8 @@
         'study': 'examine',
         'read': 'examine',
         'help': 'help',
+        'map': 'map',
+        'm': 'map',
         'inventory': 'inventory',
         'take': 'take',
         'get': 'take',
@@ -765,6 +917,7 @@
           }
           if (room.exits[dir]) {
             currentRoom = room.exits[dir];
+            visited.add(currentRoom);
             print('');
             describeRoom(currentRoom);
           } else {
@@ -851,6 +1004,13 @@
           print("You carry nothing but curiosity and a desire to learn.", 'flavor');
           break;
 
+        case 'map':
+          print('');
+          print('THE ARCHIVE, AS YOU KNOW IT:', 'room-name');
+          printAscii(renderMap(dungeon.rooms, dungeon.startRoom, visited));
+          print('[ ? ] is a way you have seen but not walked.', 'flavor');
+          break;
+
         case 'help':
           print('');
           print('AVAILABLE COMMANDS:', 'room-name');
@@ -858,6 +1018,7 @@
           print('  examine <obj> (x, check) - Inspect an object closely');
           print('  go <dir>         - Move in a direction');
           print('  n/s/e/w          - Shortcut for movement');
+          print('  map (m)          - Draw the rooms you have explored');
           print('  inventory (i)    - Check your belongings');
           print('  help (?)         - Show this message');
           print('  clear            - Clear the screen');
