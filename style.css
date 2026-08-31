@@ -245,10 +245,19 @@ body {
   transform: translate(-50%, -50%) scale(1);
 }
 
-#panel-close {
-  position: absolute;
-  top: 1rem;
-  right: 1rem;
+/* Close buttons.
+   Every overlay closes with the same control: a 32px square, a hairline muted
+   border, the accent on hover. The project panel set this pattern and the rest
+   now follow it, so the button never has to be relearned from one panel to the
+   next. Only the anchoring differs, because the overlays differ: most hang off
+   their own panel, the NPC dialog sits in a header row, and the captain's log
+   and the lightbox pin to the viewport over full-bleed art. */
+#panel-close,
+#guestbook-close,
+#log-close,
+#lightbox-close,
+#dialog-close,
+.modal-close {
   width: 32px;
   height: 32px;
   background: transparent;
@@ -258,12 +267,31 @@ body {
   font-size: 1.5rem;
   line-height: 1;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   transition: border-color 0.2s ease, color 0.2s ease;
 }
 
-#panel-close:hover {
+#panel-close:hover,
+#guestbook-close:hover,
+#log-close:hover,
+#lightbox-close:hover,
+#dialog-close:hover,
+.modal-close:hover {
   border-color: var(--accent);
   color: var(--accent);
+}
+
+/* The panel-anchored ones. #dialog-close is left out because it is a flex child
+   of the dialog header, and #log-close because it pins to the viewport. */
+#panel-close,
+#guestbook-close,
+#lightbox-close,
+.modal-close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
 }
 
 /* Carousel */
@@ -396,25 +424,9 @@ body {
   visibility: visible;
 }
 
+/* Above the lightbox image, which is otherwise the topmost thing on screen. */
 #lightbox-close {
-  position: absolute;
-  top: 1rem;
-  right: 1rem;
-  width: 48px;
-  height: 48px;
-  background: transparent;
-  border: 2px solid var(--text-muted);
-  border-radius: 50%;
-  color: var(--text);
-  font-size: 1.5rem;
-  cursor: pointer;
-  transition: border-color 0.2s ease, color 0.2s ease;
   z-index: 201;
-}
-
-#lightbox-close:hover {
-  border-color: var(--accent);
-  color: var(--accent);
 }
 
 #lightbox-image {
@@ -607,30 +619,6 @@ body {
   position: relative;
 }
 
-.modal-close {
-  position: absolute;
-  top: 0.75rem;
-  right: 0.75rem;
-  width: 32px;
-  height: 32px;
-  background: transparent;
-  border: 1px solid var(--text-muted);
-  border-radius: 50%;
-  color: var(--text);
-  font-size: 1.25rem;
-  cursor: pointer;
-  transition: border-color 0.2s ease, color 0.2s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  line-height: 1;
-}
-
-.modal-close:hover {
-  border-color: var(--accent);
-  color: var(--accent);
-}
-
 .modal-title {
   color: var(--accent);
   font-size: 1.25rem;
@@ -753,24 +741,16 @@ body {
   visibility: visible;
 }
 
+/* The log has no panel edge to hang off on desktop: the parchment is art, and a
+   button on it would sit on the drawing. So this one pins to the viewport
+   corner, over the backdrop. It sits inside .log-content so that the mobile
+   rule below can anchor it to the panel; z-index keeps it above the sibling
+   .log-text, which would otherwise paint over it and swallow the click. */
 #log-close {
-  position: absolute;
+  position: fixed;
   top: 2rem;
   right: 2rem;
-  width: 48px;
-  height: 48px;
-  background: transparent;
-  border: 2px solid var(--text-muted);
-  border-radius: 50%;
-  color: var(--text);
-  font-size: 1.5rem;
-  cursor: pointer;
-  transition: border-color 0.2s ease, color 0.2s ease;
-}
-
-#log-close:hover {
-  border-color: var(--accent);
-  color: var(--accent);
+  z-index: 1;
 }
 
 .log-content {
@@ -902,6 +882,15 @@ body {
 
 /* Mobile Captain's Log */
 @media (max-width: 800px) {
+  /* The parchment is gone here and the panel fills the screen, so the button can
+     sit on the panel's own corner like every other modal. .log-content is the
+     panel's box once the image is hidden. */
+  #log-close {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+  }
+
   .log-content {
     display: flex;
     flex-direction: column;
@@ -1182,24 +1171,6 @@ body {
   color: var(--accent);
 }
 
-#dialog-close {
-  width: 28px;
-  height: 28px;
-  background: transparent;
-  border: 1px solid var(--text-muted);
-  border-radius: 4px;
-  color: var(--text);
-  font-size: 1.25rem;
-  line-height: 1;
-  cursor: pointer;
-  transition: border-color 0.2s ease, color 0.2s ease;
-}
-
-#dialog-close:hover {
-  border-color: var(--accent);
-  color: var(--accent);
-}
-
 .dialog-text {
   font-size: 1rem;
   line-height: 1.6;
@@ -1252,27 +1223,6 @@ body {
   opacity: 1;
   visibility: visible;
   transform: translate(-50%, -50%) scale(1);
-}
-
-#guestbook-close {
-  position: absolute;
-  top: 1rem;
-  right: 1rem;
-  width: 32px;
-  height: 32px;
-  background: transparent;
-  border: 1px solid var(--text-muted);
-  border-radius: 4px;
-  color: var(--text);
-  font-size: 1.5rem;
-  line-height: 1;
-  cursor: pointer;
-  transition: border-color 0.2s ease, color 0.2s ease;
-}
-
-#guestbook-close:hover {
-  border-color: var(--accent);
-  color: var(--accent);
 }
 
 .guestbook-title {
